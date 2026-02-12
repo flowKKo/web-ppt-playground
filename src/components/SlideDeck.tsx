@@ -97,6 +97,7 @@ export default function SlideDeck({ slides, onBack }: SlideDeckProps) {
           slides={slides}
           currentIndex={fullscreen.currentIndex}
           onNext={fullscreen.next}
+          onPrev={fullscreen.prev}
           onExit={handleExitFullscreen}
         />
       )}

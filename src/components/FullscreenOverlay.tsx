@@ -8,6 +8,7 @@ interface FullscreenOverlayProps {
   slides: SlideData[]
   currentIndex: number
   onNext: () => void
+  onPrev: () => void
   onExit: () => void
 }
 
@@ -15,6 +16,7 @@ export default function FullscreenOverlay({
   slides,
   currentIndex,
   onNext,
+  onPrev,
   onExit,
 }: FullscreenOverlayProps) {
   const [direction, setDirection] = useState(0)
@@ -25,16 +27,32 @@ export default function FullscreenOverlay({
     prevIndex.current = currentIndex
   }
 
+  const isFirst = currentIndex === 0
+
   return (
     <div
-      className="fixed inset-0 z-[9999] cursor-pointer"
+      className="fixed inset-0 z-[9999]"
       style={{ background: colors.slide }}
-      onClick={onNext}
     >
+      {/* Left 20% — prev */}
+      {!isFirst && (
+        <div
+          onClick={onPrev}
+          className="absolute left-0 top-0 bottom-0 w-[20%] z-10 cursor-pointer"
+        />
+      )}
+
+      {/* Right 80% — next */}
+      <div
+        onClick={onNext}
+        className="absolute right-0 top-0 bottom-0 z-10 cursor-pointer"
+        style={{ left: isFirst ? '0' : '20%' }}
+      />
+
       {/* Close button */}
       <button
         onClick={(e) => { e.stopPropagation(); onExit() }}
-        className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10"
+        className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10"
         style={{ color: colors.textSecondary }}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -58,13 +76,6 @@ export default function FullscreenOverlay({
         </motion.div>
       </AnimatePresence>
 
-      {/* Page indicator */}
-      <div
-        className="absolute bottom-3 left-0 right-0 text-center text-sm pointer-events-none"
-        style={{ color: colors.textCaption }}
-      >
-        {currentIndex + 1} / {slides.length}
-      </div>
     </div>
   )
 }
