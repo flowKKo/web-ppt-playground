@@ -8,7 +8,6 @@ interface FullscreenOverlayProps {
   slides: SlideData[]
   currentIndex: number
   onNext: () => void
-  onPrev: () => void
   onExit: () => void
 }
 
@@ -16,7 +15,6 @@ export default function FullscreenOverlay({
   slides,
   currentIndex,
   onNext,
-  onPrev,
   onExit,
 }: FullscreenOverlayProps) {
   const [direction, setDirection] = useState(0)
@@ -27,14 +25,15 @@ export default function FullscreenOverlay({
     prevIndex.current = currentIndex
   }
 
-  const isFirst = currentIndex === 0
-  const isLast = currentIndex === slides.length - 1
-
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: colors.page }}>
+    <div
+      className="fixed inset-0 z-[9999] cursor-pointer"
+      style={{ background: colors.slide }}
+      onClick={onNext}
+    >
       {/* Close button */}
       <button
-        onClick={onExit}
+        onClick={(e) => { e.stopPropagation(); onExit() }}
         className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10"
         style={{ color: colors.textSecondary }}
       >
@@ -43,49 +42,27 @@ export default function FullscreenOverlay({
         </svg>
       </button>
 
-      {/* Slide area */}
-      <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-        {/* Left click zone */}
-        {!isFirst && (
-          <button
-            onClick={onPrev}
-            className="absolute left-0 top-0 bottom-0 w-24 z-10 flex items-center justify-start pl-4 cursor-pointer opacity-0 hover:opacity-100 transition-opacity"
-            style={{ color: colors.textSecondary }}
-          >
-            <span className="text-4xl font-light select-none">&lsaquo;</span>
-          </button>
-        )}
-
-        {/* Right click zone */}
-        {!isLast && (
-          <button
-            onClick={onNext}
-            className="absolute right-0 top-0 bottom-0 w-24 z-10 flex items-center justify-end pr-4 cursor-pointer opacity-0 hover:opacity-100 transition-opacity"
-            style={{ color: colors.textSecondary }}
-          >
-            <span className="text-4xl font-light select-none">&rsaquo;</span>
-          </button>
-        )}
-
-        {/* Animated slide */}
-        <AnimatePresence mode="popLayout" custom={direction}>
-          <motion.div
-            key={currentIndex}
-            custom={direction}
-            initial={{ opacity: 0, x: direction * 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction * -300 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-[min(90vw,calc(100vh*16/9))] aspect-video overflow-hidden rounded-xl px-20 py-16 flex flex-col justify-center"
-            style={{ background: colors.slide, boxShadow: '0 4px 24px rgba(0,0,0,0.1)' }}
-          >
-            <SlideContent data={slides[currentIndex]} />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      {/* Full-bleed slide */}
+      <AnimatePresence mode="popLayout" custom={direction}>
+        <motion.div
+          key={currentIndex}
+          custom={direction}
+          initial={{ opacity: 0, x: direction * 300 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: direction * -300 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full h-full px-20 py-16 flex flex-col justify-center"
+          style={{ background: colors.slide }}
+        >
+          <SlideContent data={slides[currentIndex]} />
+        </motion.div>
+      </AnimatePresence>
 
       {/* Page indicator */}
-      <div className="py-3 text-center text-sm" style={{ color: colors.textCaption }}>
+      <div
+        className="absolute bottom-3 left-0 right-0 text-center text-sm pointer-events-none"
+        style={{ color: colors.textCaption }}
+      >
         {currentIndex + 1} / {slides.length}
       </div>
     </div>

@@ -52,6 +52,7 @@ export function useFullscreen(totalSlides: number) {
         case 'ArrowRight':
         case 'ArrowDown':
         case ' ':
+        case 'Enter':
           e.preventDefault()
           next()
           break
