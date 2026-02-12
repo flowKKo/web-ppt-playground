@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import type { ChartSlideData } from '../../data/types'
 import { colors, motionConfig } from '../../theme/swiss'
+import EditableText from '../editor/EditableText'
 import BarChart from '../../charts/BarChart'
 import PieChart from '../../charts/PieChart'
 import LineChart from '../../charts/LineChart'
@@ -53,31 +54,34 @@ export default function ChartSlide(data: ChartSlideData) {
     >
       <div className="flex items-end justify-between shrink-0">
         <div>
-          <motion.h2
-            variants={motionConfig.child}
+          <EditableText
+            value={title}
+            field="title"
+            as="h2"
             className="text-4xl font-bold"
             style={{ color: colors.textPrimary }}
-          >
-            {title}
-          </motion.h2>
+            variants={motionConfig.child}
+          />
           {body && (
-            <motion.p
-              variants={motionConfig.child}
+            <EditableText
+              value={body}
+              field="body"
+              as="p"
               className="text-lg mt-2"
               style={{ color: colors.textSecondary }}
-            >
-              {body}
-            </motion.p>
+              variants={motionConfig.child}
+            />
           )}
         </div>
         {highlight && (
-          <motion.span
-            variants={motionConfig.child}
+          <EditableText
+            value={highlight}
+            field="highlight"
+            as="span"
             className="text-4xl font-extrabold"
             style={{ color: colors.accentPositive }}
-          >
-            {highlight}
-          </motion.span>
+            variants={motionConfig.child}
+          />
         )}
       </div>
       <motion.div

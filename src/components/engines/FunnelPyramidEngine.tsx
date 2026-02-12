@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { FunnelSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 function getClipPath(variant: FunnelSlideData['variant'], index: number, total: number): string {
   const step = 100 / total
@@ -52,8 +53,8 @@ export default function FunnelPyramidEngine({ title, body, layers, variant }: Fu
             }}
           >
             <div className="px-6 py-2">
-              <div className="text-sm font-bold text-white">{layer.label}</div>
-              {layer.description && <div className="text-xs text-white/80">{layer.description}</div>}
+              <EditableText value={layer.label} field={`layers.${i}.label`} as="div" className="text-sm font-bold text-white" />
+              {layer.description && <EditableText value={layer.description} field={`layers.${i}.description`} as="div" className="text-xs text-white/80" />}
               {layer.value !== undefined && <div className="text-xs text-white/70 font-semibold">{layer.value}</div>}
             </div>
           </motion.div>

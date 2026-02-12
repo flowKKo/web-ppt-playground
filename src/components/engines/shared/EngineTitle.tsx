@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
 import { colors, motionConfig } from '../../../theme/swiss'
+import EditableText from '../../editor/EditableText'
 
 interface EngineTitleProps {
   title: string
@@ -9,21 +9,23 @@ interface EngineTitleProps {
 export default function EngineTitle({ title, body }: EngineTitleProps) {
   return (
     <div>
-      <motion.h2
-        variants={motionConfig.child}
+      <EditableText
+        value={title}
+        field="title"
+        as="h2"
         className="text-4xl font-bold"
         style={{ color: colors.textPrimary }}
-      >
-        {title}
-      </motion.h2>
+        variants={motionConfig.child}
+      />
       {body && (
-        <motion.p
-          variants={motionConfig.child}
+        <EditableText
+          value={body}
+          field="body"
+          as="p"
           className="text-lg mt-2"
           style={{ color: colors.textSecondary }}
-        >
-          {body}
-        </motion.p>
+          variants={motionConfig.child}
+        />
       )}
     </div>
   )

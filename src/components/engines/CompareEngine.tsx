@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { CompareSlideData } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 function VersusMode({ sides }: { sides: CompareSlideData['sides'] }) {
   if (!sides || sides.length < 2) return null
@@ -10,12 +11,12 @@ function VersusMode({ sides }: { sides: CompareSlideData['sides'] }) {
     <div className="grid grid-cols-2 gap-6 flex-1">
       {sides.map((side, si) => (
         <motion.div key={si} variants={motionConfig.child} className="rounded-xl p-5" style={{ background: colors.card, borderTop: `4px solid ${palette[si]}` }}>
-          <div className="text-lg font-bold mb-4" style={{ color: palette[si] }}>{side.name}</div>
+          <EditableText value={side.name} field={`sides.${si}.name`} as="div" className="text-lg font-bold mb-4" style={{ color: palette[si] }} />
           <div className="flex flex-col gap-3">
             {side.items.map((item, ii) => (
               <div key={ii} className="flex justify-between items-center py-1" style={{ borderBottom: `1px solid ${colors.border}` }}>
-                <span className="text-sm" style={{ color: colors.textSecondary }}>{item.label}</span>
-                <span className="text-sm font-semibold" style={{ color: colors.textPrimary }}>{item.value}</span>
+                <EditableText value={item.label} field={`sides.${si}.items.${ii}.label`} as="span" className="text-sm" style={{ color: colors.textSecondary }} />
+                <EditableText value={item.value} field={`sides.${si}.items.${ii}.value`} as="span" className="text-sm font-semibold" style={{ color: colors.textPrimary }} />
               </div>
             ))}
           </div>
@@ -74,8 +75,13 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
         {visible?.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentPositive }} />
-            <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>{item.label}</span>
-            {item.description && <span className="text-xs" style={{ color: colors.textSecondary }}>— {item.description}</span>}
+            <EditableText value={item.label} field={`visible.${i}.label`} as="span" className="text-sm font-medium" style={{ color: colors.textPrimary }} />
+            {item.description && (
+              <>
+                <span className="text-xs" style={{ color: colors.textSecondary }}>&mdash;</span>
+                <EditableText value={item.description} field={`visible.${i}.description`} as="span" className="text-xs" style={{ color: colors.textSecondary }} />
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -87,8 +93,13 @@ function IcebergMode({ visible, hidden }: Pick<CompareSlideData, 'visible' | 'hi
         {hidden?.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accentNeutral }} />
-            <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>{item.label}</span>
-            {item.description && <span className="text-xs" style={{ color: colors.textSecondary }}>— {item.description}</span>}
+            <EditableText value={item.label} field={`hidden.${i}.label`} as="span" className="text-sm font-medium" style={{ color: colors.textPrimary }} />
+            {item.description && (
+              <>
+                <span className="text-xs" style={{ color: colors.textSecondary }}>&mdash;</span>
+                <EditableText value={item.description} field={`hidden.${i}.description`} as="span" className="text-xs" style={{ color: colors.textSecondary }} />
+              </>
+            )}
           </div>
         ))}
       </div>

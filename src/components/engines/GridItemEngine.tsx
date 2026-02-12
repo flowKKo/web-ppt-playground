@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import type { GridItemSlideData, GridItemEntry } from '../../data/types'
 import { colors, motionConfig, generateGradientColors } from '../../theme/swiss'
 import EngineTitle from './shared/EngineTitle'
+import EditableText from '../editor/EditableText'
 
 const colorMap: Record<string, string> = {
   positive: colors.accentPositive,
@@ -16,73 +17,82 @@ function getColumns(count: number, override?: number): number {
   return 4
 }
 
-function CardContent({ item }: { item: GridItemEntry }) {
+function CardContent({ item, index }: { item: GridItemEntry; index: number }) {
   return (
     <>
       {item.value && (
-        <div
+        <EditableText
+          value={item.value}
+          field={`items.${index}.value`}
+          as="div"
           className="text-3xl font-extrabold mb-1"
           style={{ color: item.valueColor ? colorMap[item.valueColor] : colors.accentNeutral }}
-        >
-          {item.value}
-        </div>
+        />
       )}
-      <div className="text-base font-semibold" style={{ color: colors.textPrimary }}>
-        {item.title}
-      </div>
+      <EditableText
+        value={item.title}
+        field={`items.${index}.title`}
+        as="div"
+        className="text-base font-semibold"
+        style={{ color: colors.textPrimary }}
+      />
       {item.description && (
-        <div className="text-sm mt-1" style={{ color: colors.textSecondary }}>
-          {item.description}
-        </div>
+        <EditableText
+          value={item.description}
+          field={`items.${index}.description`}
+          as="div"
+          className="text-sm mt-1"
+          style={{ color: colors.textSecondary }}
+        />
       )}
     </>
   )
 }
 
-function SolidCard({ item }: { item: GridItemEntry }) {
+function SolidCard({ item, index }: { item: GridItemEntry; index: number }) {
   return (
     <motion.div
       variants={motionConfig.child}
       className="rounded-xl p-5"
       style={{ background: colors.card, boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}
     >
-      <CardContent item={item} />
+      <CardContent item={item} index={index} />
     </motion.div>
   )
 }
 
-function OutlineCard({ item }: { item: GridItemEntry }) {
+function OutlineCard({ item, index }: { item: GridItemEntry; index: number }) {
   return (
     <motion.div
       variants={motionConfig.child}
       className="rounded-xl p-5"
       style={{ border: `2px solid ${colors.border}` }}
     >
-      <CardContent item={item} />
+      <CardContent item={item} index={index} />
     </motion.div>
   )
 }
 
-function SidelineCard({ item, color }: { item: GridItemEntry; color: string }) {
+function SidelineCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
     <motion.div
       variants={motionConfig.child}
       className="rounded-lg p-5"
       style={{ borderLeft: `4px solid ${color}`, background: colors.card }}
     >
-      <CardContent item={item} />
+      <CardContent item={item} index={index} />
     </motion.div>
   )
 }
 
-function ToplineCard({ item, color }: { item: GridItemEntry; color: string }) {
+function ToplineCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
     <motion.div
       variants={motionConfig.child}
       className="rounded-lg p-5"
       style={{ borderTop: `4px solid ${color}`, background: colors.card }}
     >
-      <CardContent item={item} />
+      <CardContent item={item} index={index} />
     </motion.div>
   )
 }
@@ -96,7 +106,7 @@ function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: num
       >
         {index + 1}
       </div>
-      <CardContent item={item} />
+      <CardContent item={item} index={index} />
     </motion.div>
   )
 }
@@ -121,15 +131,15 @@ export default function GridItemEngine({ title, body, items, variant, columns }:
         {items.map((item, i) => {
           switch (variant) {
             case 'outline':
-              return <OutlineCard key={i} item={item} />
+              return <OutlineCard key={i} item={item} index={i} />
             case 'sideline':
-              return <SidelineCard key={i} item={item} color={palette[i]} />
+              return <SidelineCard key={i} item={item} index={i} color={palette[i]} />
             case 'topline':
-              return <ToplineCard key={i} item={item} color={palette[i]} />
+              return <ToplineCard key={i} item={item} index={i} color={palette[i]} />
             case 'top-circle':
               return <TopCircleCard key={i} item={item} index={i} color={palette[i]} />
             default: // solid + all others fallback
-              return <SolidCard key={i} item={item} />
+              return <SolidCard key={i} item={item} index={i} />
           }
         })}
       </div>
