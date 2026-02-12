@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { useEditor } from './EditorProvider'
 import SlideDataEditor from './SlideDataEditor'
 import LayoutPicker from './LayoutPicker'
 import BlockLayoutPicker from './BlockLayoutPicker'
 import BlockDataEditor from './BlockDataEditor'
 import AddBlockPanel from './AddBlockPanel'
-import type { SlideData, BlockSlideData, ContentBlock } from '../../data/types'
+import type { SlideData, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
 import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../../data/editor-types'
 
 interface PropertyPanelProps {
@@ -64,12 +65,9 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
     addBlock,
   } = useEditor()
 
+  // No selection — show block list overview for block-slide pages, or generic hint
   if (!selection) {
-    return (
-      <div className="h-full flex items-center justify-center p-6 text-gray-400 text-sm text-center">
-        点击元素进行编辑
-      </div>
-    )
+    return <NoSelectionPanel originalSlides={originalSlides} />
   }
 
   if (selection.type === 'content-box') {
@@ -77,16 +75,9 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
     const box = getContentBox(slideIndex) ?? { x: 0, y: 0, width: 100, height: 100 }
     const effectiveData = getEffectiveSlideData(slideIndex, originalSlides[slideIndex])
 
-    // Block-slide: show add-block panel instead of old layout/data editors
+    // Block-slide: show block list overview
     if (effectiveData.type === 'block-slide') {
-      return (
-        <div className="p-4 space-y-6 overflow-y-auto h-full">
-          <div className="text-xs font-semibold text-gray-600 uppercase">
-            自由布局页面 ({effectiveData.blocks.length} 个 Block)
-          </div>
-          <AddBlockPanel onAdd={(block) => addBlock(slideIndex, block)} />
-        </div>
-      )
+      return <BlockListPanel slideIndex={slideIndex} blocks={effectiveData.blocks} />
     }
 
     return (
@@ -251,13 +242,114 @@ function LineOverlayPanel({ overlay, update }: { overlay: LineOverlay; update: (
   )
 }
 
+const BLOCK_TYPE_META: Record<string, { icon: string; label: string }> = {
+  'title-body': { icon: 'T', label: '标题文本' },
+  'grid-item': { icon: '⊞', label: '网格' },
+  'sequence': { icon: '→', label: '序列' },
+  'compare': { icon: '⇔', label: '对比' },
+  'funnel': { icon: '▽', label: '漏斗' },
+  'concentric': { icon: '◎', label: '同心圆' },
+  'hub-spoke': { icon: '✳', label: '轮辐' },
+  'venn': { icon: '◑', label: '韦恩' },
+  'chart': { icon: '▊', label: '图表' },
+}
+
+function getBlockPreview(data: BlockData): string {
+  switch (data.type) {
+    case 'title-body': return data.title || ''
+    case 'grid-item': return data.items.map((i) => i.title).join(', ')
+    case 'sequence': return data.steps.map((s) => s.label).join(' → ')
+    case 'compare': return data.mode
+    case 'funnel': return data.layers.map((l) => l.label).join(' → ')
+    case 'concentric': return data.rings.map((r) => r.label).join(', ')
+    case 'hub-spoke': return data.center.label
+    case 'venn': return data.sets.map((s) => s.label).join(' ∩ ')
+    case 'chart': return data.chartType
+    default: return ''
+  }
+}
+
+function BlockListPanel({ slideIndex, blocks }: { slideIndex: number; blocks: ContentBlock[] }) {
+  const { setSelection, addBlock } = useEditor()
+
+  return (
+    <div className="p-4 space-y-4 overflow-y-auto h-full">
+      <div className="text-xs font-semibold text-gray-600 uppercase">
+        页面元素 ({blocks.length})
+      </div>
+      {blocks.length === 0 ? (
+        <div className="text-xs text-gray-400 py-2">暂无元素，点击右下角 + 添加</div>
+      ) : (
+        <div className="space-y-1">
+          {blocks.map((block) => {
+            const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type }
+            const preview = getBlockPreview(block.data)
+            return (
+              <button
+                key={block.id}
+                onClick={() => setSelection({ type: 'block', slideIndex, blockId: block.id })}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md hover:bg-gray-100 cursor-pointer text-left transition-colors"
+              >
+                <span className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-sm shrink-0">{meta.icon}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-gray-700 truncate">{meta.label}</div>
+                  {preview && <div className="text-[10px] text-gray-400 truncate">{preview}</div>}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+      <div className="border-t border-gray-100 pt-3">
+        <AddBlockPanel onAdd={(block) => addBlock(slideIndex, block)} />
+      </div>
+    </div>
+  )
+}
+
+function NoSelectionPanel({ originalSlides }: { originalSlides: SlideData[] }) {
+  const { getEffectiveSlideData, setSelection } = useEditor()
+
+  // Find the first visible block-slide to show its block list
+  // For simplicity, scan slides for block-slide type
+  for (let i = 0; i < originalSlides.length; i++) {
+    const data = getEffectiveSlideData(i, originalSlides[i])
+    if (data.type === 'block-slide') {
+      return <BlockListPanel slideIndex={i} blocks={data.blocks} />
+    }
+  }
+
+  return (
+    <div className="h-full flex items-center justify-center p-6 text-gray-400 text-sm text-center">
+      点击元素进行编辑
+    </div>
+  )
+}
+
+function CollapsibleSection({ title, defaultOpen = true, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border-t border-gray-100 pt-3">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 w-full text-left cursor-pointer mb-2"
+      >
+        <svg className={`w-3 h-3 text-gray-400 transition-transform ${open ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M6.3 3.3a1 1 0 011.4 0l6 6a1 1 0 010 1.4l-6 6a1 1 0 01-1.4-1.4L11.58 10 6.3 4.7a1 1 0 010-1.4z" />
+        </svg>
+        <span className="text-xs font-semibold text-gray-500 uppercase">{title}</span>
+      </button>
+      {open && children}
+    </div>
+  )
+}
+
 function BlockPropertyPanel({ slideIndex, blockId, originalSlides }: { slideIndex: number; blockId: string; originalSlides: SlideData[] }) {
   const {
     getEffectiveSlideData,
     updateBlock,
     removeBlock,
     updateBlockData,
-    addBlock,
   } = useEditor()
 
   const effectiveData = getEffectiveSlideData(slideIndex, originalSlides[slideIndex])
@@ -272,44 +364,50 @@ function BlockPropertyPanel({ slideIndex, blockId, originalSlides }: { slideInde
     )
   }
 
+  const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type }
+
   return (
-    <div className="p-4 space-y-6 overflow-y-auto h-full">
-      {/* Position/Size */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-600 uppercase">位置 / 尺寸</span>
-          <button
-            onClick={() => removeBlock(slideIndex, blockId)}
-            className="text-xs text-red-500 hover:underline cursor-pointer"
-          >
-            删除 Block
-          </button>
-        </div>
+    <div className="p-4 space-y-0 overflow-y-auto h-full">
+      {/* Header: type icon + name + delete */}
+      <div className="flex items-center gap-2 pb-3">
+        <span className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center text-base shrink-0">{meta.icon}</span>
+        <span className="text-sm font-semibold text-gray-700 flex-1">{meta.label}</span>
+        <button
+          onClick={() => removeBlock(slideIndex, blockId)}
+          className="text-xs text-red-400 hover:text-red-600 cursor-pointer px-1"
+          title="删除"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Style: layout picker */}
+      <CollapsibleSection title="样式" defaultOpen>
+        <BlockLayoutPicker
+          data={block.data}
+          onChange={(data) => updateBlockData(slideIndex, blockId, data)}
+        />
+      </CollapsibleSection>
+
+      {/* Data editor */}
+      <CollapsibleSection title="数据" defaultOpen>
+        <BlockDataEditor
+          data={block.data}
+          onChange={(data) => updateBlockData(slideIndex, blockId, data)}
+        />
+      </CollapsibleSection>
+
+      {/* Position/Size — collapsed by default */}
+      <CollapsibleSection title="位置 / 尺寸" defaultOpen={false}>
         <div className="grid grid-cols-2 gap-2">
           <NumberField label="X (%)" value={block.x} onChange={(v) => updateBlock(slideIndex, blockId, { x: v })} step={0.5} />
           <NumberField label="Y (%)" value={block.y} onChange={(v) => updateBlock(slideIndex, blockId, { y: v })} step={0.5} />
           <NumberField label="宽 (%)" value={block.width} onChange={(v) => updateBlock(slideIndex, blockId, { width: v })} min={10} step={0.5} />
           <NumberField label="高 (%)" value={block.height} onChange={(v) => updateBlock(slideIndex, blockId, { height: v })} min={10} step={0.5} />
         </div>
-      </div>
-
-      {/* Block Layout Picker */}
-      <BlockLayoutPicker
-        data={block.data}
-        onChange={(data) => updateBlockData(slideIndex, blockId, data)}
-      />
-
-      {/* Block Data Editor */}
-      <BlockDataEditor
-        data={block.data}
-        onChange={(data) => updateBlockData(slideIndex, blockId, data)}
-      />
-
-      {/* Add Block */}
-      <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-600 uppercase">添加 Block</span>
-        <AddBlockPanel onAdd={(b) => addBlock(slideIndex, b)} />
-      </div>
+      </CollapsibleSection>
     </div>
   )
 }

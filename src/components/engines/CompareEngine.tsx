@@ -29,11 +29,25 @@ function VersusMode({ sides }: { sides: CompareSlideData['sides'] }) {
 function QuadrantMode({ quadrantItems, xAxis, yAxis }: Pick<CompareSlideData, 'quadrantItems' | 'xAxis' | 'yAxis'>) {
   if (!quadrantItems) return null
   const palette = generateGradientColors(quadrantItems.length)
-  const pad = 50
+  const pad = 60
   const w = 700
   const h = 400
   const vbW = w + pad * 2
   const vbH = h + pad * 2
+  const cx = pad + w / 2
+  const cy = pad + h / 2
+  const axisColor = 'rgba(0,0,0,0.12)'
+
+  // Derive quadrant labels from axis names (strip trailing arrows/symbols)
+  const xName = xAxis?.replace(/[→↑↓←…]+$/g, '').trim() || ''
+  const yName = yAxis?.replace(/[→↑↓←…]+$/g, '').trim() || ''
+  const quadrantLabels = xName && yName ? [
+    { x: pad + w * 0.75, y: pad + h * 0.15, text: `高${xName}·高${yName}` },       // top-right
+    { x: pad + w * 0.25, y: pad + h * 0.15, text: `低${xName}·高${yName}` },       // top-left
+    { x: pad + w * 0.25, y: pad + h * 0.9, text: `低${xName}·低${yName}` },        // bottom-left
+    { x: pad + w * 0.75, y: pad + h * 0.9, text: `高${xName}·低${yName}` },        // bottom-right
+  ] : []
+
   return (
     <motion.div variants={motionConfig.child} className="flex-1 min-h-0 w-full">
       <svg
@@ -41,23 +55,45 @@ function QuadrantMode({ quadrantItems, xAxis, yAxis }: Pick<CompareSlideData, 'q
         viewBox={`0 0 ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
       >
+        <defs>
+          <marker id="arrow-right" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill={axisColor} />
+          </marker>
+          <marker id="arrow-up" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill={axisColor} />
+          </marker>
+        </defs>
+
         {/* Quadrant background tints */}
-        <rect x={pad + w / 2} y={pad} width={w / 2} height={h / 2} fill={colors.accentPositive} opacity={0.03} />
-        <rect x={pad} y={pad} width={w / 2} height={h / 2} fill={colors.accentNeutral} opacity={0.03} />
-        {/* Axes */}
-        <line x1={pad} y1={pad + h / 2} x2={pad + w} y2={pad + h / 2} stroke={colors.textCaption} strokeWidth="1.5" />
-        <line x1={pad + w / 2} y1={pad} x2={pad + w / 2} y2={pad + h} stroke={colors.textCaption} strokeWidth="1.5" />
-        {/* Axis labels */}
-        {xAxis && <text x={pad + w - 4} y={pad + h / 2 + 24} textAnchor="end" fontSize="14" fontWeight="500" fill={colors.textSecondary}>{xAxis}</text>}
-        {yAxis && <text x={pad + w / 2 + 10} y={pad + 16} fontSize="14" fontWeight="500" fill={colors.textSecondary}>{yAxis}</text>}
-        {/* Points */}
+        <rect x={cx} y={pad} width={w / 2} height={h / 2} fill={colors.accentPositive} opacity={0.05} rx={2} />
+        <rect x={pad} y={pad} width={w / 2} height={h / 2} fill={colors.accentNeutral} opacity={0.04} rx={2} />
+        <rect x={pad} y={cy} width={w / 2} height={h / 2} fill="rgba(0,0,0,0.02)" rx={2} />
+        <rect x={cx} y={cy} width={w / 2} height={h / 2} fill={colors.accentNegative} opacity={0.04} rx={2} />
+
+        {/* Quadrant labels */}
+        {quadrantLabels.map((ql, i) => (
+          <text key={i} x={ql.x} y={ql.y} textAnchor="middle" fontSize="11" fontWeight="500" fill={colors.textCaption} opacity={0.7}>
+            {ql.text}
+          </text>
+        ))}
+
+        {/* Axes — dashed with arrows */}
+        <line x1={pad} y1={cy} x2={pad + w - 2} y2={cy} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd="url(#arrow-right)" />
+        <line x1={cx} y1={pad + h} x2={cx} y2={pad + 2} stroke={axisColor} strokeWidth="1" strokeDasharray="6 4" markerEnd="url(#arrow-up)" />
+
+        {/* Axis labels — positioned at ends */}
+        {xAxis && <text x={pad + w + 6} y={cy + 5} textAnchor="start" fontSize="13" fontWeight="600" fill={colors.textSecondary}>{xAxis}</text>}
+        {yAxis && <text x={cx} y={pad - 10} textAnchor="middle" fontSize="13" fontWeight="600" fill={colors.textSecondary}>{yAxis}</text>}
+
+        {/* Data points */}
         {quadrantItems.map((item, i) => {
-          const cx = pad + (item.x / 100) * w
-          const cy = pad + h - (item.y / 100) * h
+          const px = pad + (item.x / 100) * w
+          const py = pad + h - (item.y / 100) * h
           return (
             <g key={i}>
-              <circle cx={cx} cy={cy} r={11} fill={palette[i]} opacity={0.88} />
-              <text x={cx} y={cy - 18} textAnchor="middle" fontSize="14" fontWeight="600" fill={colors.textPrimary}>{item.label}</text>
+              <circle cx={px} cy={py} r={8} fill={palette[i]} opacity={0.15} />
+              <circle cx={px} cy={py} r={5} fill={palette[i]} />
+              <text x={px} y={py - 14} textAnchor="middle" fontSize="12" fontWeight="600" fill={colors.textPrimary} stroke={colors.slide} strokeWidth={3} paintOrder="stroke">{item.label}</text>
             </g>
           )
         })}
