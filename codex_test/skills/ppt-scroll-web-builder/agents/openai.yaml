@@ -1,4 +1,0 @@
-interface:
-  display_name: "PPT Scroll Web Builder"
-  short_description: "Generate 16:9 vertical PPT-style web pages"
-  default_prompt: "Use $ppt-scroll-web-builder to build a vertically scrollable 16:9 PPT-style webpage with configurable language, theme, and script."
