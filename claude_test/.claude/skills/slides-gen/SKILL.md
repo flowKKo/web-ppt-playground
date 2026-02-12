@@ -83,6 +83,139 @@ Target audience: self-reading deck (no speaker), or data-heavy presentation wher
 
 ---
 
+## Visual Mandate — 每页必须有视觉元素
+
+**核心规则：除非是纯文字金句（key-point）或标题页（title），否则每一张幻灯片都必须包含至少一个视觉元素。**
+
+视觉元素包括：
+- **数据图表** — 横向条形图、大数字+微型进度条、堆叠双色条形图、面积对比等
+- **结构图示** — 流程图、架构图、层级图、对比矩阵
+- **图片占位符** — 截图、产品界面、示意图（当前用虚线框+详细描述代替）
+
+### 视觉元素分配决策
+
+```
+这张幻灯片有量化数据吗？
+  有 → 必须有数据图表（图表字段）
+  没有 ↓
+
+这张幻灯片描述架构/流程/对比关系吗？
+  是 → 必须有结构图示（图示字段）
+  否 ↓
+
+这张幻灯片提到了可截图的界面/产品吗？
+  是 → 必须有图片占位符（占位图字段）
+  否 ↓
+
+这张幻灯片是纯概念/金句/标题吗？
+  是 → 可以没有视觉元素（仅限 title 和 key-point 类型）
+  否 → 必须为内容设计一个辅助视觉元素（概念图、图标网格、关系图等）
+```
+
+**例外情况（允许无视觉元素的 slide types）：**
+- `title` — 标题页，纯文字即可
+- `key-point` — 金句/过渡页，大字居中即可
+
+**其他所有 slide types 必须有 `图表`、`图示`、或 `占位图` 中的至少一个。**
+
+---
+
+## Visual Description Standard — 视觉描述规范
+
+**每一个视觉元素（图表、图示、占位图）都必须包含两个详细描述：**
+
+### (a) 外观描述 — 它长什么样
+
+必须具体到能让前端开发者不看原始数据就能画出来的程度：
+
+| 视觉类型 | 外观描述必须包含 |
+|----------|----------------|
+| 横向条形图 | 条形数量、每条的标签、数值、颜色、长度比例关系、是否有基准线、标签和数值的位置 |
+| 大数字 | 数字的具体值、字号层级、颜色（正/负/中性）、下方微型进度条的宽度比例和颜色 |
+| 堆叠双色条形图 | 基线段的颜色和宽度、增益段的颜色和宽度、总宽度、标注位置 |
+| 面积对比 | 圆形/方形的相对大小比例、颜色、标签位置、数值标注 |
+| 流程图/架构图 | 节点数量、每个节点的文字、节点之间的连接方式（箭头/线条）、布局方向（横向/纵向）、分层关系 |
+| 对比矩阵/表格 | 行数、列数、表头内容、单元格内容、高亮规则、分隔线样式 |
+| 图片占位符 | 占位框的尺寸比例（如 16:9、4:3、1:1）、框内文字说明、虚线样式、背景色、预期放入的真实内容描述 |
+
+### (b) 动画描述 — 它怎么动
+
+必须具体到前端开发者能直接写出动画代码：
+
+| 动画类型 | 动画描述必须包含 |
+|----------|----------------|
+| countUp | 起始值（通常0）、目标值、持续时间、缓动函数、是否有千分位逗号 |
+| growBar | 起始宽度（0%）、目标宽度（百分比）、持续时间、缓动函数、是否有弹性效果 |
+| appear | 起始状态（opacity:0, y:16px）、终态、持续时间、是否有 stagger delay |
+| highlight | 其他元素的目标 opacity（0.3）、高亮元素的 opacity（1.0）、过渡时间 |
+| revealGroup | 组内元素数量、stagger 间隔时间、每个元素的入场方式 |
+| 占位图入场 | 虚线框如何出现（淡入/从边缘滑入）、内部标签文字的出现时机 |
+
+### 描述格式示例
+
+```markdown
+- 图表:
+  - 类型: 横向条形图
+  - 外观描述: >
+      4 条水平条形，从上到下排列。每条左侧是标签文字（w-32，右对齐，
+      text-base，textSecondary 色），中间是彩色条形（h-8，圆角右端 rounded-r-lg），
+      右侧是数值（text-lg，font-semibold）。
+      第 1 条: "Simple Codex" → 绿色条（宽度占满 100%）→ "75.1"
+      第 2 条: "Droid" → 蓝灰色条（宽度 93%）→ "69.9"
+      第 3 条: "Junie CLI" → 蓝灰色条（宽度 86%）→ "64.3"
+      第 4 条: "Claude Code" → 红色条（宽度 77%）→ "58.0"
+      在 62.9 的位置有一条竖向虚线（border-dashed），标注 "Terminus 2 基线"。
+      条形之间间距 gap-3。整体垂直居中在内容区域。
+  - 数据: [同上表格]
+  - 动画描述: >
+      F1 触发时：4 条条形从宽度 0% 同时开始生长到目标宽度，
+      持续 0.8s，缓动 [0.16, 1, 0.3, 1]（先快后慢，略带弹性）。
+      条形生长过程中，右侧数值同步 countUp 从 0 到目标值。
+      基准虚线在条形生长到 62.9 位置时淡入（opacity 0→1，0.3s）。
+      4 条条形之间有 0.05s 的 stagger 延迟，从上到下依次启动。
+```
+
+```markdown
+- 占位图:
+  - 外观描述: >
+      宽高比 16:9 的虚线矩形框，占据幻灯片内容区域的 60% 宽度。
+      边框: 2px dashed，颜色 rgba(0,0,0,0.15)，圆角 12px。
+      背景: rgba(0,0,0,0.02)，略带灰度以区别于幻灯片背景。
+      框内正中居中显示文字 "Terminal-Bench 2.0 排行榜截图"，
+      字号 text-lg，颜色 rgba(0,0,0,0.25)，font-style italic。
+      框的右上角有一个小图标提示（16x16 的图片 icon，rgba(0,0,0,0.2)）。
+  - 预期内容: Terminal-Bench 2.0 官网排行榜页面截图，需要展示完整的前 10 名排名列表，
+    高亮 Claude Opus 4.6 出现的多个条目（58.0 和 69.9）
+  - 动画描述: >
+      F0 时立即显示：虚线框从 opacity 0 → 1 淡入，同时从 y:12px 上移到 y:0，
+      持续 0.5s，缓动 ease-out。框内文字在框出现后 0.2s 延迟淡入。
+```
+
+```markdown
+- 图示:
+  - 类型: 三层堆叠架构图
+  - 外观描述: >
+      纵向排列的 3 个矩形层，从上到下分别是：
+      第 1 层（顶部）: 浅蓝灰色背景（accentNeutral/10），标题 "工具描述"，
+        副文字 "定义能力规格"，高度约 60px，全宽，圆角 8px。
+      第 2 层（中部）: 稍深蓝灰色背景（accentNeutral/15），标题 "系统提示"，
+        副文字 "设定高层目标"，同样高度和样式。
+      第 3 层（底部）: 最深蓝灰色背景（accentNeutral/25）+ 左侧 3px 绿色边框高亮，
+        标题 "系统通知"，副文字 "末端注入关键指令"，加粗处理表示重要性。
+      层与层之间有 gap-2 间距。
+      右侧有一个竖向箭头（SVG，从顶部指向底部），旁边标注 "递近偏差 →"，
+      字号 text-sm，斜体，textCaption 色。
+      整体宽度约 max-w-[70%]，左对齐。
+  - 动画描述: >
+      F1 触发时：3 层从上到下依次出现（appear），每层间隔 0.15s。
+      每层入场动画: opacity 0→1 + y:12→0，持续 0.4s。
+      第 3 层入场后，左侧绿色边框从高度 0 向下展开到全高（growBar 式，0.3s）。
+      右侧箭头在所有层出现后 0.2s 延迟淡入（opacity 0→1，0.3s），
+      箭头淡入时伴随从 scaleY:0.5 → scaleY:1 的伸展效果。
+```
+
+---
+
 ## Input Files
 
 ### Script File (--script)
@@ -185,22 +318,32 @@ This is the most critical phase. Map each script section to one or more slides. 
    - `compact`: 1 slide per section by default. Only split if section has 2+ genuinely distinct points.
    - `rich`: Split freely. A section with comparison + data + conclusion can become 2-3 slides.
 
-2. **Chart/visualization decision happens HERE**, not during writing. For each slide with quantitative data, decide now:
+2. **Visual mandate check (CRITICAL):**
+   - For each slide, confirm it has at least one visual element (chart / diagram / placeholder image).
+   - Only `title` and `key-point` types are exempt.
+   - If a slide has no quantitative data AND no screenshot reference AND no architecture/flow to diagram, ask: "Can I add a conceptual diagram, icon grid, or relationship graph?" If yes, add it. If truly impossible, convert to `key-point`.
+
+3. **Chart/visualization decision happens HERE**, not during writing. For each slide with quantitative data, decide now:
    - Does this need a chart? What type?
    - Or are big numbers + labels sufficient?
    - See "Chart Specification Guide" below.
 
-3. **Animation decision happens HERE**. For each slide, assign:
+4. **Image placeholder decision happens HERE**. For slides referencing products, interfaces, or demos:
+   - What screenshot/image would best support the content?
+   - What exact content should the placeholder describe?
+   - See "Image & Placeholder Specification Guide" below.
+
+5. **Animation decision happens HERE**. For each slide, assign:
    - Which elements get fragment animations?
    - What animation types (countUp, growBar, etc.)?
    - See "Animation Specification Guide" below.
 
-4. **Narrative rhythm check:**
+6. **Narrative rhythm check:**
    - Alternate slide types. Never 3+ of the same type consecutively.
    - Insert `key-point` dividers between major topic groups.
    - Start with `title`, end with `key-point`.
 
-5. **Slide count check:**
+7. **Slide count check:**
    - `compact`: 15-20 slides for a 10-12 minute talk
    - `rich`: 20-28 slides for a 10-12 minute talk
    - If over budget, merge. If under, consider splitting data-heavy sections.
@@ -219,9 +362,11 @@ For each slide in the plan, populate ALL fields:
 
 3. **Data fields** — Extract EXACT numbers from source. Never round. Never invent.
 
-4. **图表** — Full chart specification (see Chart Specification Guide).
+4. **图表 / 图示 / 占位图** — MUST include for every non-title/key-point slide. Include:
+   - `外观描述`: Detailed enough for a developer to implement without seeing the original data (see Visual Description Standard).
+   - `动画描述`: Exact animation behavior — timing, easing, stagger, trigger conditions (see Visual Description Standard).
 
-5. **动画** — Fragment animation directives (see Animation Specification Guide).
+5. **动画** — Fragment animation directives for the full slide (see Animation Specification Guide).
 
 6. **布局** — Layout treatment hint (see Layout Treatment Guide).
 
@@ -235,9 +380,11 @@ Before writing the file, run these checks:
 2. **No fabrication:** Every number traces to the source document.
 3. **Rhythm:** Slide types alternate. No 3+ consecutive same-type.
 4. **Density:** Each slide meets the min data points for its type and density mode.
-5. **Charts:** Every slide with ≥3 quantitative data points has a chart spec.
-6. **Animations:** Every data slide has animation directives. Every big number has `countUp`. Every bar has `growBar`.
-7. **Titles:** No generic titles. Every title states a takeaway.
+5. **Visual mandate:** Every non-title/key-point slide has at least one visual element (图表 / 图示 / 占位图).
+6. **Visual descriptions:** Every visual element has both `外观描述` and `动画描述`, detailed enough for implementation.
+7. **Charts:** Every slide with ≥3 quantitative data points has a chart spec.
+8. **Animations:** Every data slide has animation directives. Every big number has `countUp`. Every bar has `growBar`.
+9. **Titles:** No generic titles. Every title states a takeaway.
 
 ### Phase 6: Write Output — 写入文件
 
@@ -282,7 +429,7 @@ How many data points?
 
 ### Chart Specification Format
 
-The `图表` field uses a structured notation:
+The `图表` field uses a structured notation. **Every chart MUST include `外观描述` and `动画描述`。**
 
 ```markdown
 - 图表:
@@ -296,8 +443,16 @@ The `图表` field uses a structured notation:
     | Claude Code | 58.0 | 负向色（低于基线） |
   - 基准线: 62.9（Terminus 2 基线，虚线标注）
   - 排序: 降序
-  - 标签位置: 左侧
-  - 值位置: 条形末端右侧
+  - 外观描述: >
+      4 条水平条形从上到下排列，间距 gap-3。
+      每条结构: 左侧标签（w-32, text-right, text-base）| 彩色条形（h-8, rounded-r-lg）| 右侧数值（text-lg, font-semibold）。
+      条形宽度按比例: Simple Codex=100%, Droid=93%, Junie=86%, Claude Code=77%。
+      颜色: 第1条 accentPositive（绿），第2-3条 accentNeutral（蓝灰），第4条 accentNegative（红）。
+      62.9 位置处有竖向虚线（1px dashed, rgba(0,0,0,0.2)），旁注 "Terminus 2 基线"（text-xs, textCaption）。
+  - 动画描述: >
+      F1 触发: 4 条条形从 width:0 同时生长到目标宽度，duration 0.8s，ease [0.16,1,0.3,1]。
+      条形间 stagger 0.05s（从上到下）。右侧数值同步 countUp（0→目标值，0.8s）。
+      基准虚线在条形生长经过 62.9 位置时淡入（opacity 0→1, 0.3s）。
 ```
 
 For stacked bars:
@@ -309,8 +464,16 @@ For stacked bars:
     |------|------|------|------|
     | GPT-5.3 | 64.7 | +10.4 | 75.1 |
     | Opus 4.6 | 62.9 | +7.0 | 69.9 |
-  - 基线颜色: 中性色（灰）
-  - 增益颜色: 正向色（绿）
+  - 外观描述: >
+      2 条水平堆叠条形，间距 gap-4。每条由两段拼接:
+      左段（基线）: 灰色（barTrack 色），宽度按比例（64.7/75.1=86%, 62.9/75.1=84%）。
+      右段（增益）: 绿色（accentPositive），宽度按增益比例（10.4/75.1=14%, 7.0/75.1=9%）。
+      左侧标签: 模型名（w-28, text-right）。右侧标注: 总分 + "(+增益)" 文字。
+      两段之间无间隙，视觉上连续。条形高度 h-10，圆角仅在最右端（rounded-r-lg）。
+  - 动画描述: >
+      F1: 灰色基线段从 width:0 生长到目标宽度（0.6s, ease-out）。
+      F2: 绿色增益段紧接着从 width:0 继续生长（0.5s, ease-out），
+      同时右侧增益数字 countUp（0→+10.4, 0.5s）。两条之间 stagger 0.1s。
 ```
 
 For big numbers:
@@ -321,6 +484,69 @@ For big numbers:
     - 最低分: 58.0（负向色，进度条 58/100）
     - 最高分: 69.9（正向色，进度条 70/100）
   - 进度条最大值: 100
+  - 外观描述: >
+      水平排列的 2 个指标块，间距 gap-8，居中。每个指标块:
+      上方: 大数字 text-7xl font-extrabold（58.0 用 accentNegative 红色，69.9 用 accentPositive 绿色）。
+      下方: 微型进度条 h-2 rounded-full（w-48 为满宽），颜色与数字一致。
+      进度条下方: 标签文字 text-base textCaption（"最低分" / "最高分"）。
+  - 动画描述: >
+      F1: 左侧数字 countUp 0→58.0（0.8s, ease-out），同时进度条 growBar 0%→58%（0.8s）。
+      F2: 右侧数字 countUp 0→69.9（0.8s），同时进度条 growBar 0%→70%（0.8s）。
+```
+
+---
+
+## Image & Placeholder Specification Guide
+
+When a slide references a product interface, website, demo, or any visual that cannot be rendered as a CSS chart, use a **placeholder image** (`占位图`). Placeholders are temporary — they define what the real image should be, so it can be replaced later.
+
+### Placeholder Specification Format
+
+**Every placeholder MUST include `外观描述`, `预期内容`, and `动画描述`。**
+
+```markdown
+- 占位图:
+  - 标题: "Terminal-Bench 2.0 排行榜截图"
+  - 外观描述: >
+      虚线矩形框，宽高比 16:9，占幻灯片内容区域 60% 宽度，水平居中。
+      边框: 2px dashed rgba(0,0,0,0.15)，圆角 rounded-xl (12px)。
+      背景: rgba(0,0,0,0.02)。
+      框内垂直水平居中显示标题文字 "Terminal-Bench 2.0 排行榜截图"，
+      字号 text-lg，颜色 rgba(0,0,0,0.25)，斜体。
+      左下角小字标注 "[截图占位]"，text-sm，rgba(0,0,0,0.15)。
+  - 预期内容: >
+      Terminal-Bench 2.0 官网 (tbench.ai) 排行榜页面截图。
+      需要展示前 10 名 agent 的完整排名表格，
+      包含 agent 名称、模型、分数列。
+      需要用高亮框标注 Claude Opus 4.6 出现的多个条目:
+      第 3 名 Droid (69.9) 和第 22 名 Claude Code (58.0)。
+  - 动画描述: >
+      F0 立即显示: 虚线框 opacity 0→1 + y:12→0 淡入上移，
+      duration 0.5s，ease-out。
+      框内标题文字在框出现后延迟 0.2s 淡入。
+```
+
+### Placeholder Types
+
+| 场景 | 占位图宽高比 | 位置 |
+|------|------------|------|
+| 网站/排行榜截图 | 16:9 | 居中，占 60% 宽度 |
+| 产品界面截图 | 16:10 或 4:3 | 居中，占 50-60% 宽度 |
+| 代码编辑器截图 | 16:9 | 居中或偏左（右侧放指标卡） |
+| 移动端截图 | 9:16 | 居中，max-height 70% |
+| Logo / 图标 | 1:1 | 小尺寸，配合文字使用 |
+| 论文/文档引用 | 4:3 | 居中或偏右 |
+
+### When to Use Placeholders vs Charts
+
+```
+这个数据能用 CSS/SVG 直接画出来吗？
+  能（条形图、数字、进度条、流程图）→ 用图表/图示，不用占位图
+  不能（真实截图、产品界面、照片）→ 用占位图
+
+这是一个已知的外部界面/网站吗？
+  是 → 占位图，`预期内容` 详细描述截图内容和标注要求
+  否 → 尝试用 CSS 图示替代
 ```
 
 ---
@@ -514,13 +740,27 @@ Is it grouped items with substantial detail per item?
   |---------|---------|-----|
   | data    | data    | ... |
 
-## Chart specification
+## Chart specification (MUST include 外观描述 + 动画描述)
 - 图表:
   - 类型: [横向条形图/大数字+微型进度条/堆叠双色条形图/面积对比/排名列表/分组条形图]
   - 数据: [table or list]
   - 排序: [升序/降序]
   - 基准线: [value + description, optional]
-  - 颜色: [semantic color assignment]
+  - 外观描述: [详细描述每个视觉元素的位置、大小、颜色、比例关系]
+  - 动画描述: [详细描述触发时机、持续时间、缓动函数、stagger、起止状态]
+
+## Image placeholder (MUST include 外观描述 + 预期内容 + 动画描述)
+- 占位图:
+  - 标题: [占位框内显示的标题文字]
+  - 外观描述: [虚线框的尺寸比例、边框样式、背景、标签文字、位置]
+  - 预期内容: [详细描述将来替换占位符的真实图片内容、标注要求]
+  - 动画描述: [占位框的入场动画]
+
+## Diagram (MUST include 外观描述 + 动画描述)
+- 图示:
+  - 类型: [流程图/架构图/层级图/对比矩阵]
+  - 外观描述: [节点数量、文字、连接方式、布局方向、颜色]
+  - 动画描述: [逐步reveal顺序、stagger间隔、每元素入场方式]
 
 ## Animation specification
 - 动画:
@@ -534,7 +774,6 @@ Is it grouped items with substantial detail per item?
 - 布局: [卡片/表格/边框高亮/无边框网格/时间线/行内高亮/大数字面板]
 
 ## Structure fields (type-specific)
-- 占位图: [Description of what goes here]
 - 卡片:
   - [Item 1]
   - [Item 2]
@@ -652,8 +891,16 @@ Given this script section:
     |------|------------------|------|------|
     | GPT-5.3 | 64.7 | +10.4 | 75.1 (Simple Codex) |
     | Opus 4.6 | 62.9 | +7.0 | 69.9 (Droid) |
-  - 基线颜色: 中性色
-  - 增益颜色: 正向色
+  - 外观描述: >
+      2 条水平堆叠条形，垂直排列，间距 gap-4。
+      每条左侧: 模型名（w-24, text-right, text-base）。
+      每条由两段拼接: 灰色基线段 + 绿色增益段，总高度 h-10，右端 rounded-r-lg。
+      GPT-5.3 条: 灰段占 86%（64.7/75.1），绿段占 14%（10.4/75.1），总宽 100%。
+      Opus 4.6 条: 灰段占 90%（62.9/69.9），绿段占 10%（7.0/69.9），总宽 93%（69.9/75.1）。
+      右侧标注: 总分 + 绿色小字 "(+增益)"。
+  - 动画描述: >
+      F1: 灰色段 + 绿色段依次生长（先灰 0.5s，再绿 0.4s），
+      ease [0.16,1,0.3,1]。右侧增益数字同步 countUp。两条间 stagger 0.1s。
 - 动画:
   - fragments: 2
   - 步骤:
@@ -675,12 +922,26 @@ Given this script section:
     |------|------------------|------|------|-----------|
     | GPT-5.3 | 64.7 | +10.4 | 75.1 | Simple Codex |
     | Opus 4.6 | 62.9 | +7.0 | 69.9 | Droid |
-  - 基线颜色: 中性色（灰）
-  - 增益颜色: 正向色（绿）
   - 基准线: 62.9（Terminus 2 + Opus 4.6 基线，虚线）
   - 排序: 按总分降序
-  - 标签位置: 左侧（模型名）
-  - 值位置: 条形末端（总分 + 增益标注）
+  - 外观描述: >
+      2 条水平堆叠条形，垂直排列，间距 gap-5，整体居中偏左（max-w-[85%]）。
+      每条结构: 左侧标签区（w-28）显示 "模型名 + 脚手架名"，text-right，text-base。
+      条形区由两段无间隙拼接:
+      - 灰色段（barTrack 色 #F0F0EA）: 代表基线分数，宽度按基线/最高分比例。
+      - 绿色段（accentPositive #4CAF50）: 代表增益分数，紧接灰段，宽度按增益/最高分比例。
+      条形总高度 h-10，仅最右端有圆角 rounded-r-lg。
+      右侧标注区: 总分数字（text-xl, font-bold）+ 绿色小字 "(+10.4)"（text-sm, accentPositive）。
+      GPT-5.3 行: 灰段 86%宽 + 绿段 14%宽 = 100%（最长条）。
+      Opus 4.6 行: 灰段 84%宽 + 绿段 9%宽 = 93%。
+      在图表左侧 62.9 分对应的 x 位置，有一条竖向虚线（1px dashed, rgba(0,0,0,0.15)），
+      虚线顶端标注 "基线 62.9"（text-xs, textCaption, 斜体）。
+  - 动画描述: >
+      F1: 2 条灰色基线段从 width:0 生长到目标宽度，duration 0.6s，ease [0.16,1,0.3,1]。
+      两条之间 stagger 0.1s。基准虚线在灰段经过 62.9 位置时淡入（opacity 0→1, 0.3s）。
+      F2: 绿色增益段从灰段末端继续生长，duration 0.5s，ease [0.16,1,0.3,1]。
+      同时右侧增益数字 countUp（0→+10.4 / 0→+7.0，0.5s, ease-out）。
+      结论文字在底部 appear（opacity 0→1 + y:8→0，0.4s）。
 - 动画:
   - fragments: 3
   - 步骤:
@@ -694,17 +955,27 @@ Given this script section:
 
 ## Anti-Patterns (NEVER DO)
 
+### Content
 - **Never generate a slide with only a title.** Every slide must have substantive data.
 - **Never use generic titles** like "数据对比" or "关键发现". Titles state the specific takeaway.
 - **Never use placeholder values** like "XX%", "N/A", "待填".
 - **Never invent numbers.** Every metric must trace back to the source document.
 - **Never skip a topic from the script.** If the script mentions it, there must be a slide.
 - **Never add topics not in the script.** The script is the authoritative content selector.
-- **Never omit the `图表` field on a slide with ≥3 quantitative data points.**
+- **Never put detailed spoken narration into the slide body.** Slides capture DATA; narration is in the script.
+
+### Visual Mandate
+- **Never produce a non-title/key-point slide without a visual element.** Every content slide needs 图表, 图示, or 占位图.
+- **Never write a `图表` field without `外观描述`.** "横向条形图" alone is useless — describe every bar, label, color, size.
+- **Never write a `图表` or `占位图` field without `动画描述`.** Every visual element must specify how it animates.
+- **Never write a vague `外观描述`** like "一个条形图展示分数对比". Must include: element count, specific values, colors, sizes, positions.
+- **Never write a vague `动画描述`** like "条形图动画展示". Must include: trigger fragment, duration, easing, stagger timing, specific start→end states.
+- **Never write a `占位图` without `预期内容`** describing exactly what real image should replace it.
+
+### Animation
 - **Never omit the `动画` field on any non-title, non-key-point slide.**
 - **Never use `countUp` on text or `appear` on a big number.** Match animation type to content type.
 - **Never assign identical animation (all `appear`) to every slide.** Use the animation type table.
-- **Never put detailed spoken narration into the slide body.** Slides capture DATA; narration is in the script.
 
 ---
 
@@ -712,21 +983,36 @@ Given this script section:
 
 Before writing the output file, verify:
 
+### Structure
 - [ ] Density mode is stated in the header comment
 - [ ] Slide plan table is included as HTML comment
 - [ ] Every script section has corresponding slide(s)
 - [ ] No script topic missing; no extra topic added
-- [ ] Every slide has a specific, non-generic takeaway title
-- [ ] Every data field contains exact values from the source document
 - [ ] Slide types alternate — no 3+ consecutive same type
 - [ ] First slide = `title`, last slide = `key-point`
 - [ ] `key-point` dividers separate major topic groups
 - [ ] Slide count within density range (compact: 15-20, rich: 20-28)
-- [ ] **Every slide with quantitative data has a `图表` field with type + data**
-- [ ] **Every non-title/key-point slide has a `动画` field with fragments + steps**
-- [ ] **Every big number specifies `countUp` animation**
-- [ ] **Every bar/progress element specifies `growBar` animation**
-- [ ] **`布局` field present on comparison, grid, and card-grid slides**
-- [ ] **Max 50% of content slides use `卡片` layout** (track card count)
+
+### Content
+- [ ] Every slide has a specific, non-generic takeaway title
+- [ ] Every data field contains exact values from the source document
 - [ ] Color hints (正向色/负向色/中性色) used for all data with sentiment
 - [ ] All text in specified `--lang`
+
+### Visual Mandate
+- [ ] **Every non-title/key-point slide has at least one visual element** (图表 / 图示 / 占位图)
+- [ ] **Every `图表` has `外观描述`**: element count, specific values, colors, sizes, positions, proportions
+- [ ] **Every `图表` has `动画描述`**: trigger fragment, duration, easing, stagger, start→end states
+- [ ] **Every `占位图` has `外观描述`**: dimensions, border style, background, label text, positioning
+- [ ] **Every `占位图` has `预期内容`**: detailed description of the real image that should replace it
+- [ ] **Every `占位图` has `动画描述`**: entrance animation timing and style
+- [ ] **Every `图示` has `外观描述`**: node count, labels, connections, layout direction, colors
+- [ ] **Every `图示` has `动画描述`**: reveal sequence, stagger timing, per-element effects
+
+### Charts & Animation
+- [ ] Every slide with quantitative data has a `图表` field with type + data
+- [ ] Every non-title/key-point slide has a `动画` field with fragments + steps
+- [ ] Every big number specifies `countUp` animation
+- [ ] Every bar/progress element specifies `growBar` animation
+- [ ] `布局` field present on comparison, grid, and card-grid slides
+- [ ] Max 50% of content slides use `卡片` layout (track card count)
