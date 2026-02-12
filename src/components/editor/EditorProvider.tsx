@@ -432,22 +432,40 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     return () => clearTimeout(saveTimer.current)
   }, [state.deckState, deckId])
 
-  // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z
+  // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z, Delete/Backspace
   useEffect(() => {
     if (!state.editMode) return
     const handler = (e: KeyboardEvent) => {
+      // Don't intercept when typing in an input/textarea/contenteditable
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return
+
       const isMod = e.metaKey || e.ctrlKey
-      if (!isMod || e.key !== 'z') return
-      e.preventDefault()
-      if (e.shiftKey) {
-        dispatch({ type: 'REDO' })
-      } else {
-        dispatch({ type: 'UNDO' })
+      if (isMod && e.key === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) {
+          dispatch({ type: 'REDO' })
+        } else {
+          dispatch({ type: 'UNDO' })
+        }
+        return
+      }
+
+      // Delete/Backspace: remove selected element
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const sel = state.selection
+        if (!sel) return
+        e.preventDefault()
+        if (sel.type === 'block') {
+          dispatch({ type: 'REMOVE_BLOCK', slideIndex: sel.slideIndex, blockId: sel.blockId })
+        } else if (sel.type === 'overlay') {
+          dispatch({ type: 'REMOVE_OVERLAY', slideIndex: sel.slideIndex, id: sel.id })
+        }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [state.editMode])
+  }, [state.editMode, state.selection])
 
   const toggleEditMode = useCallback(() => dispatch({ type: 'TOGGLE_EDIT_MODE' }), [])
   const setTool = useCallback((tool: ActiveTool) => dispatch({ type: 'SET_TOOL', tool }), [])
