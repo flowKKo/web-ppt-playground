@@ -14,7 +14,7 @@ interface ContentBoxWrapperProps {
 const DEFAULT_BOX: ContentBox = { x: 0, y: 0, width: 100, height: 100 }
 
 export default function ContentBoxWrapper({ slideIndex, slideData, children }: ContentBoxWrapperProps) {
-  const { editMode, selection, setSelection, getContentBox, setContentBox } = useEditor()
+  const { editMode, selection, setSelection, getContentBox, setContentBox, setContentBoxQuiet, beginDrag } = useEditor()
   const box = getContentBox(slideIndex) ?? DEFAULT_BOX
   const isSelected = selection?.type === 'content-box' && selection.slideIndex === slideIndex
   const constraint = getResizeConstraint(slideData)
@@ -31,12 +31,12 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     const { startMouse, startBox, containerRect } = dragRef.current
     const dx = ((e.clientX - startMouse.x) / containerRect.width) * 100
     const dy = ((e.clientY - startMouse.y) / containerRect.height) * 100
-    setContentBox(slideIndex, {
+    setContentBoxQuiet(slideIndex, {
       ...startBox,
       x: startBox.x + dx,
       y: startBox.y + dy,
     })
-  }, [slideIndex, setContentBox])
+  }, [slideIndex, setContentBoxQuiet])
 
   const handlePointerUp = useCallback((e: PointerEvent) => {
     dragRef.current = null
@@ -52,6 +52,7 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     // Don't start drag when user interacts with editable text
     if ((e.target as HTMLElement).closest('[data-editable-text]')) return
     e.preventDefault()
+    beginDrag()
     const container = (e.currentTarget as HTMLElement).parentElement!
     dragRef.current = {
       startMouse: { x: e.clientX, y: e.clientY },
@@ -61,11 +62,11 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
-  }, [editMode, isSelected, box, handlePointerMove, handlePointerUp])
+  }, [editMode, isSelected, box, beginDrag, handlePointerMove, handlePointerUp])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
-    setContentBox(slideIndex, newBounds)
-  }, [slideIndex, setContentBox])
+    setContentBoxQuiet(slideIndex, newBounds)
+  }, [slideIndex, setContentBoxQuiet])
 
   if (!editMode) {
     // Non-edit: just render children in a full container (no overlays etc are separate)
@@ -118,6 +119,7 @@ export default function ContentBoxWrapper({ slideIndex, slideData, children }: C
           constraint={constraint}
           bounds={box}
           onResize={handleResize}
+          onResizeStart={beginDrag}
           color="#42A5F5"
         />
       )}

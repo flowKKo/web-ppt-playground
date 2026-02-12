@@ -28,13 +28,19 @@ export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
 
 function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
-  const activeIndex = useActiveSlideIndex(slideRefs, slides.length)
-  const fullscreen = useFullscreen(slides.length)
-  const { editMode, toggleEditMode, getEffectiveSlideData } = useEditor()
+  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide } = useEditor()
+
+  const allSlides = useMemo(
+    () => [...slides, ...addedSlides],
+    [slides, addedSlides],
+  )
+
+  const activeIndex = useActiveSlideIndex(slideRefs, allSlides.length)
+  const fullscreen = useFullscreen(allSlides.length)
 
   const effectiveSlides = useMemo(
-    () => slides.map((s, i) => getEffectiveSlideData(i, s)),
-    [slides, getEffectiveSlideData],
+    () => allSlides.map((s, i) => getEffectiveSlideData(i, s)),
+    [allSlides, getEffectiveSlideData],
   )
 
   const scrollToSlide = useCallback((index: number) => {
@@ -62,6 +68,9 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         slides={effectiveSlides}
         activeIndex={activeIndex}
         onClickSlide={scrollToSlide}
+        editMode={editMode}
+        onAddSlide={addSlide}
+        originalCount={slides.length}
       />
 
       {/* Main content */}
@@ -84,7 +93,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
           </button>
         )}
 
-        {slides.map((slide, i) => (
+        {allSlides.map((slide, i) => (
           <Slide
             key={i}
             ref={(el) => { slideRefs.current[i] = el }}
@@ -149,7 +158,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
             <span className="text-sm font-semibold" style={{ color: colors.textPrimary }}>属性面板</span>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <PropertyPanel originalSlides={slides} />
+            <PropertyPanel originalSlides={allSlides} />
           </div>
         </div>
       )}

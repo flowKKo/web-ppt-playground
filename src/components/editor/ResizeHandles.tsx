@@ -13,6 +13,7 @@ interface ResizeHandlesProps {
   constraint: ResizeConstraint
   bounds: Bounds
   onResize: (newBounds: Bounds) => void
+  onResizeStart?: () => void
   color?: string // handle color
 }
 
@@ -61,7 +62,7 @@ function getHandleStyle(pos: HandlePosition, bounds: Bounds): React.CSSPropertie
   }
 }
 
-export default function ResizeHandles({ constraint, bounds, onResize, color = '#42A5F5' }: ResizeHandlesProps) {
+export default function ResizeHandles({ constraint, bounds, onResize, onResizeStart, color = '#42A5F5' }: ResizeHandlesProps) {
   const positions = getHandlePositions(constraint)
   const startRef = useRef<{ pos: HandlePosition; startBounds: Bounds; startMouse: { x: number; y: number }; containerRect: DOMRect } | null>(null)
 
@@ -152,6 +153,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, color = '#
   const handlePointerDown = useCallback((pos: HandlePosition, e: React.PointerEvent) => {
     e.stopPropagation()
     e.preventDefault()
+    onResizeStart?.()
     const container = (e.currentTarget as HTMLElement).parentElement!
     startRef.current = {
       pos,
@@ -162,7 +164,7 @@ export default function ResizeHandles({ constraint, bounds, onResize, color = '#
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     document.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('pointerup', handlePointerUp)
-  }, [bounds, handlePointerMove, handlePointerUp])
+  }, [bounds, onResizeStart, handlePointerMove, handlePointerUp])
 
   return (
     <>

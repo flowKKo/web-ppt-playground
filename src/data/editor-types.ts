@@ -58,6 +58,7 @@ export interface SlideEditorState {
 export interface DeckEditorState {
   version: 1
   slides: Record<number, SlideEditorState>
+  addedSlides?: SlideData[]
 }
 
 export type SelectionTarget =

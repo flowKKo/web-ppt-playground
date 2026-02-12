@@ -28,11 +28,16 @@ type EditorAction =
   | { type: 'SET_TOOL'; tool: ActiveTool }
   | { type: 'SET_SELECTION'; target: SelectionTarget }
   | { type: 'SET_COLOR'; color: string }
+  | { type: 'BEGIN_DRAG' }
   | { type: 'SET_CONTENT_BOX'; slideIndex: number; box: ContentBox | undefined }
+  | { type: 'SET_CONTENT_BOX_QUIET'; slideIndex: number; box: ContentBox | undefined }
   | { type: 'SET_SLIDE_DATA_OVERRIDE'; slideIndex: number; data: SlideData | undefined }
   | { type: 'ADD_OVERLAY'; slideIndex: number; overlay: OverlayElement }
   | { type: 'UPDATE_OVERLAY'; slideIndex: number; id: string; overlay: Partial<OverlayElement> }
+  | { type: 'UPDATE_OVERLAY_QUIET'; slideIndex: number; id: string; overlay: Partial<OverlayElement> }
   | { type: 'REMOVE_OVERLAY'; slideIndex: number; id: string }
+  | { type: 'ADD_SLIDE'; data: SlideData }
+  | { type: 'REMOVE_ADDED_SLIDE'; index: number }
   | { type: 'LOAD_STATE'; state: DeckEditorState }
   | { type: 'UNDO' }
   | { type: 'REDO' }
@@ -69,6 +74,10 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'SET_COLOR':
       return { ...state, activeColor: action.color }
 
+    // ─── Begin drag: snapshot history once before a drag/resize sequence ───
+    case 'BEGIN_DRAG':
+      return { ...state, ...pushHistory(state) }
+
     // ─── Actions that mutate deckState → push to history ───
     case 'SET_CONTENT_BOX': {
       const hist = pushHistory(state)
@@ -76,6 +85,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return {
         ...state,
         ...hist,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          contentBox: action.box,
+        }),
+      }
+    }
+    // Quiet variant: updates state without pushing history (used during drag/resize)
+    case 'SET_CONTENT_BOX_QUIET': {
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      return {
+        ...state,
         deckState: setSlideState(state.deckState, action.slideIndex, {
           ...slide,
           contentBox: action.box,
@@ -120,6 +140,19 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         }),
       }
     }
+    // Quiet variant: updates state without pushing history (used during drag/resize)
+    case 'UPDATE_OVERLAY_QUIET': {
+      const slide = getSlideState(state.deckState, action.slideIndex)
+      return {
+        ...state,
+        deckState: setSlideState(state.deckState, action.slideIndex, {
+          ...slide,
+          overlays: slide.overlays.map((o) =>
+            o.id === action.id ? { ...o, ...action.overlay } as OverlayElement : o,
+          ),
+        }),
+      }
+    }
     case 'REMOVE_OVERLAY': {
       const hist = pushHistory(state)
       const slide = getSlideState(state.deckState, action.slideIndex)
@@ -135,6 +168,27 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
           ...slide,
           overlays: slide.overlays.filter((o) => o.id !== action.id),
         }),
+      }
+    }
+    case 'ADD_SLIDE': {
+      const hist = pushHistory(state)
+      const existing = state.deckState.addedSlides ?? []
+      return {
+        ...state,
+        ...hist,
+        deckState: { ...state.deckState, addedSlides: [...existing, action.data] },
+      }
+    }
+    case 'REMOVE_ADDED_SLIDE': {
+      const hist = pushHistory(state)
+      const existing = state.deckState.addedSlides ?? []
+      return {
+        ...state,
+        ...hist,
+        deckState: {
+          ...state.deckState,
+          addedSlides: existing.filter((_, i) => i !== action.index),
+        },
       }
     }
     case 'LOAD_STATE':
@@ -188,15 +242,21 @@ interface EditorContextValue {
   setTool: (tool: ActiveTool) => void
   setSelection: (target: SelectionTarget) => void
   setActiveColor: (color: string) => void
+  beginDrag: () => void
   getContentBox: (slideIndex: number) => ContentBox | undefined
   setContentBox: (slideIndex: number, box: ContentBox | undefined) => void
+  setContentBoxQuiet: (slideIndex: number, box: ContentBox | undefined) => void
   getEffectiveSlideData: (slideIndex: number, original: SlideData) => SlideData
   getSlideDataOverride: (slideIndex: number) => SlideData | undefined
   setSlideDataOverride: (slideIndex: number, data: SlideData | undefined) => void
   getOverlays: (slideIndex: number) => OverlayElement[]
   addOverlay: (slideIndex: number, overlay: OverlayElement) => void
   updateOverlay: (slideIndex: number, id: string, changes: Partial<OverlayElement>) => void
+  updateOverlayQuiet: (slideIndex: number, id: string, changes: Partial<OverlayElement>) => void
   removeOverlay: (slideIndex: number, id: string) => void
+  addedSlides: SlideData[]
+  addSlide: (data: SlideData) => void
+  removeAddedSlide: (index: number) => void
   undo: () => void
   redo: () => void
   canUndo: boolean
@@ -272,6 +332,8 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
   const setSelection = useCallback((target: SelectionTarget) => dispatch({ type: 'SET_SELECTION', target }), [])
   const setActiveColor = useCallback((color: string) => dispatch({ type: 'SET_COLOR', color }), [])
 
+  const beginDrag = useCallback(() => dispatch({ type: 'BEGIN_DRAG' }), [])
+
   const getContentBox = useCallback(
     (slideIndex: number) => getSlideState(state.deckState, slideIndex).contentBox,
     [state.deckState],
@@ -280,6 +342,12 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
   const setContentBox = useCallback(
     (slideIndex: number, box: ContentBox | undefined) =>
       dispatch({ type: 'SET_CONTENT_BOX', slideIndex, box }),
+    [],
+  )
+
+  const setContentBoxQuiet = useCallback(
+    (slideIndex: number, box: ContentBox | undefined) =>
+      dispatch({ type: 'SET_CONTENT_BOX_QUIET', slideIndex, box }),
     [],
   )
 
@@ -317,9 +385,27 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     [],
   )
 
+  const updateOverlayQuiet = useCallback(
+    (slideIndex: number, id: string, changes: Partial<OverlayElement>) =>
+      dispatch({ type: 'UPDATE_OVERLAY_QUIET', slideIndex, id, overlay: changes }),
+    [],
+  )
+
   const removeOverlay = useCallback(
     (slideIndex: number, id: string) =>
       dispatch({ type: 'REMOVE_OVERLAY', slideIndex, id }),
+    [],
+  )
+
+  const addedSlides = state.deckState.addedSlides ?? []
+
+  const addSlide = useCallback(
+    (data: SlideData) => dispatch({ type: 'ADD_SLIDE', data }),
+    [],
+  )
+
+  const removeAddedSlide = useCallback(
+    (index: number) => dispatch({ type: 'REMOVE_ADDED_SLIDE', index }),
     [],
   )
 
@@ -338,15 +424,21 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     setTool,
     setSelection,
     setActiveColor,
+    beginDrag,
     getContentBox,
     setContentBox,
+    setContentBoxQuiet,
     getEffectiveSlideData,
     getSlideDataOverride,
     setSlideDataOverride,
     getOverlays,
     addOverlay,
     updateOverlay,
+    updateOverlayQuiet,
     removeOverlay,
+    addedSlides,
+    addSlide,
+    removeAddedSlide,
     undo,
     redo,
     canUndo,

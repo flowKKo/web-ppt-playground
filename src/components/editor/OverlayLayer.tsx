@@ -174,7 +174,7 @@ interface OverlayItemProps {
 }
 
 function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditing, onStopEditing, interactive }: OverlayItemProps) {
-  const { setSelection, updateOverlay } = useEditor()
+  const { setSelection, updateOverlay, updateOverlayQuiet, beginDrag } = useEditor()
   const dragRef = useRef<{ startMouse: { x: number; y: number }; startPos: { x: number; y: number }; containerRect: DOMRect } | null>(null)
 
   const handleClick = useCallback((e: React.MouseEvent) => {
@@ -194,6 +194,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
     if ((e.target as HTMLElement).closest('[data-resize-handle]')) return
     e.stopPropagation()
     e.preventDefault()
+    beginDrag()
     const container = (e.currentTarget as HTMLElement).closest('[data-overlay-layer]') ?? (e.currentTarget as HTMLElement).parentElement!
     const pos = overlay.type === 'line'
       ? { x: overlay.x1, y: overlay.y1 }
@@ -204,7 +205,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
       containerRect: container.getBoundingClientRect(),
     }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }, [interactive, isSelected, isEditing, overlay])
+  }, [interactive, isSelected, isEditing, overlay, beginDrag])
 
   const handleDragMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return
@@ -216,19 +217,19 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
       const origLine = overlay as LineOverlay
       const lineDx = origLine.x2 - origLine.x1
       const lineDy = origLine.y2 - origLine.y1
-      updateOverlay(slideIndex, overlay.id, {
+      updateOverlayQuiet(slideIndex, overlay.id, {
         x1: startPos.x + dx,
         y1: startPos.y + dy,
         x2: startPos.x + dx + lineDx,
         y2: startPos.y + dy + lineDy,
       })
     } else {
-      updateOverlay(slideIndex, overlay.id, {
+      updateOverlayQuiet(slideIndex, overlay.id, {
         x: startPos.x + dx,
         y: startPos.y + dy,
       })
     }
-  }, [overlay, slideIndex, updateOverlay])
+  }, [overlay, slideIndex, updateOverlayQuiet])
 
   const handleDragEnd = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return
@@ -242,8 +243,8 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
   }, [onStopEditing, updateOverlay, slideIndex, overlay.id])
 
   const handleResize = useCallback((newBounds: { x: number; y: number; width: number; height: number }) => {
-    updateOverlay(slideIndex, overlay.id, newBounds)
-  }, [updateOverlay, slideIndex, overlay.id])
+    updateOverlayQuiet(slideIndex, overlay.id, newBounds)
+  }, [updateOverlayQuiet, slideIndex, overlay.id])
 
   if (overlay.type === 'line') {
     return (
@@ -271,12 +272,14 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
           <>
             <LineEndpoint
               x={overlay.x1} y={overlay.y1}
-              onChange={(x, y) => updateOverlay(slideIndex, overlay.id, { x1: x, y1: y })}
+              onChange={(x, y) => updateOverlayQuiet(slideIndex, overlay.id, { x1: x, y1: y })}
+              onDragStart={beginDrag}
               containerRef={null}
             />
             <LineEndpoint
               x={overlay.x2} y={overlay.y2}
-              onChange={(x, y) => updateOverlay(slideIndex, overlay.id, { x2: x, y2: y })}
+              onChange={(x, y) => updateOverlayQuiet(slideIndex, overlay.id, { x2: x, y2: y })}
+              onDragStart={beginDrag}
               containerRef={null}
             />
           </>
@@ -316,6 +319,7 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
             constraint="free"
             bounds={{ x: overlay.x, y: overlay.y, width: overlay.width, height: overlay.height }}
             onResize={handleResize}
+            onResizeStart={beginDrag}
             color="#AB47BC"
           />
         )}
@@ -369,12 +373,13 @@ function OverlayItem({ overlay, slideIndex, isSelected, isEditing, onStartEditin
 
 // ─── Line Endpoint Handle ───
 
-function LineEndpoint({ x, y, onChange }: { x: number; y: number; onChange: (x: number, y: number) => void; containerRef: unknown }) {
+function LineEndpoint({ x, y, onChange, onDragStart }: { x: number; y: number; onChange: (x: number, y: number) => void; onDragStart?: () => void; containerRef: unknown }) {
   const dragRef = useRef<{ startMouse: { x: number; y: number }; startPos: { x: number; y: number }; containerRect: DOMRect } | null>(null)
 
   const handleDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation()
     e.preventDefault()
+    onDragStart?.()
     const container = (e.currentTarget as HTMLElement).parentElement!
     dragRef.current = {
       startMouse: { x: e.clientX, y: e.clientY },
@@ -382,7 +387,7 @@ function LineEndpoint({ x, y, onChange }: { x: number; y: number; onChange: (x: 
       containerRect: container.getBoundingClientRect(),
     }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }, [x, y])
+  }, [x, y, onDragStart])
 
   const handleMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return
