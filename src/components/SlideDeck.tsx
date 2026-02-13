@@ -28,7 +28,7 @@ export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
 
 function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
-  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide, setSelection } = useEditor()
+  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide, removeAddedSlide, setSelection } = useEditor()
 
   const allSlides = useMemo(
     () => [...slides, ...addedSlides],
@@ -46,7 +46,10 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
 
   const scrollToSlide = useCallback((index: number) => {
     slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [])
+    if (editMode) {
+      setSelection({ type: 'content-box', slideIndex: index })
+    }
+  }, [editMode, setSelection])
 
   const handleEnterFullscreen = useCallback(() => {
     // Exit edit mode when entering fullscreen
@@ -73,7 +76,9 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         onClickSlide={scrollToSlide}
         editMode={editMode}
         onAddSlide={addSlide}
+        onDeleteSlide={removeAddedSlide}
         originalCount={slides.length}
+        onBack={onBack}
       />
 
       {/* Main content */}
@@ -86,21 +91,6 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
           if (e.target === e.currentTarget) setSelection(null)
         }}
       >
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="fixed top-5 left-5 xl:left-[calc(14rem+1.25rem)] z-50 px-4 py-2 rounded-lg text-base font-medium cursor-pointer transition-colors"
-            style={{
-              color: colors.textSecondary,
-              background: colors.card,
-              border: `1px solid ${colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}
-          >
-            &larr; 返回
-          </button>
-        )}
-
         {allSlides.map((slide, i) => (
           <Slide
             key={i}

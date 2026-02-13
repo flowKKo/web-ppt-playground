@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useEditor } from './EditorProvider'
 import SlideDataEditor from './SlideDataEditor'
 import LayoutPicker from './LayoutPicker'
-import BlockLayoutPicker from './BlockLayoutPicker'
+import BlockLayoutPicker, { BLOCK_TYPE_META } from './BlockLayoutPicker'
 import BlockDataEditor from './BlockDataEditor'
 import AddBlockPanel from './AddBlockPanel'
-import type { SlideData, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
+import type { SlideData, ContentBlock, BlockData } from '../../data/types'
 import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../../data/editor-types'
 
 interface PropertyPanelProps {
@@ -15,7 +15,7 @@ interface PropertyPanelProps {
 function NumberField({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number }) {
   return (
     <label className="block">
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
       <input
         type="number"
         value={Math.round(value * 100) / 100}
@@ -23,7 +23,7 @@ function NumberField({ label, value, onChange, min, max, step }: { label: string
         max={max}
         step={step ?? 1}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
       />
     </label>
   )
@@ -32,7 +32,7 @@ function NumberField({ label, value, onChange, min, max, step }: { label: string
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="flex items-center gap-2">
-      <span className="text-xs text-gray-500 flex-1">{label}</span>
+      <span className="text-[11px] text-gray-500 font-medium flex-1">{label}</span>
       <input
         type="color"
         value={value || '#000000'}
@@ -43,7 +43,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-24 px-2 py-1 text-xs border border-gray-200 rounded"
+        className="w-24 px-2.5 py-1 text-xs border border-gray-200 rounded-md focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
       />
     </label>
   )
@@ -85,7 +85,7 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
         {/* Position/Size */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-600 uppercase">位置 / 尺寸</span>
+            <span className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase">位置 / 尺寸</span>
             <button
               onClick={() => setContentBox(slideIndex, undefined)}
               className="text-xs text-blue-600 hover:underline cursor-pointer"
@@ -144,7 +144,7 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
   return (
     <div className="p-4 space-y-6 overflow-y-auto h-full">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-600 uppercase">
+        <span className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase">
           {overlay.type === 'text' ? '文本叠加' : overlay.type === 'rect' ? '矩形叠加' : '线条叠加'}
         </span>
         <button
@@ -172,22 +172,22 @@ function TextOverlayPanel({ overlay, update }: { overlay: TextOverlay; update: (
         <NumberField label="高 (%)" value={overlay.height} onChange={(v) => update({ height: v })} min={3} step={0.5} />
       </div>
       <label className="block">
-        <span className="text-xs text-gray-500">文本</span>
+        <span className="text-[11px] text-gray-500 font-medium">文本</span>
         <textarea
           value={overlay.text}
           onChange={(e) => update({ text: e.target.value })}
-          className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+          className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
           rows={2}
         />
       </label>
       <NumberField label="字号" value={overlay.fontSize} onChange={(v) => update({ fontSize: v })} min={8} max={200} />
       <ColorField label="颜色" value={overlay.color} onChange={(v) => update({ color: v })} />
       <label className="block">
-        <span className="text-xs text-gray-500">字重</span>
+        <span className="text-[11px] text-gray-500 font-medium">字重</span>
         <select
           value={overlay.fontWeight}
           onChange={(e) => update({ fontWeight: Number(e.target.value) as 400 | 600 | 700 })}
-          className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+          className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
         >
           <option value={400}>Normal (400)</option>
           <option value={600}>Semi-bold (600)</option>
@@ -195,11 +195,11 @@ function TextOverlayPanel({ overlay, update }: { overlay: TextOverlay; update: (
         </select>
       </label>
       <label className="block">
-        <span className="text-xs text-gray-500">对齐</span>
+        <span className="text-[11px] text-gray-500 font-medium">对齐</span>
         <select
           value={overlay.textAlign}
           onChange={(e) => update({ textAlign: e.target.value as 'left' | 'center' | 'right' })}
-          className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+          className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
         >
           <option value="left">左对齐</option>
           <option value="center">居中</option>
@@ -242,18 +242,6 @@ function LineOverlayPanel({ overlay, update }: { overlay: LineOverlay; update: (
   )
 }
 
-const BLOCK_TYPE_META: Record<string, { icon: string; label: string }> = {
-  'title-body': { icon: 'T', label: '标题文本' },
-  'grid-item': { icon: '⊞', label: '网格' },
-  'sequence': { icon: '→', label: '序列' },
-  'compare': { icon: '⇔', label: '对比' },
-  'funnel': { icon: '▽', label: '漏斗' },
-  'concentric': { icon: '◎', label: '同心圆' },
-  'hub-spoke': { icon: '✳', label: '轮辐' },
-  'venn': { icon: '◑', label: '韦恩' },
-  'chart': { icon: '▊', label: '图表' },
-}
-
 function getBlockPreview(data: BlockData): string {
   switch (data.type) {
     case 'title-body': return data.title || ''
@@ -274,27 +262,36 @@ function BlockListPanel({ slideIndex, blocks }: { slideIndex: number; blocks: Co
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
-      <div className="text-xs font-semibold text-gray-600 uppercase">
+      <div className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase">
         页面元素 ({blocks.length})
       </div>
       {blocks.length === 0 ? (
-        <div className="text-xs text-gray-400 py-2">暂无元素，点击右下角 + 添加</div>
+        <div className="flex flex-col items-center gap-2 py-6 text-gray-400">
+          <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          <span className="text-xs">从下方添加第一个元素</span>
+        </div>
       ) : (
         <div className="space-y-1">
           {blocks.map((block) => {
-            const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type }
+            const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type, color: 'bg-gray-100 text-gray-500' }
             const preview = getBlockPreview(block.data)
             return (
               <button
                 key={block.id}
                 onClick={() => setSelection({ type: 'block', slideIndex, blockId: block.id })}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md hover:bg-gray-100 cursor-pointer text-left transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-transparent hover:border-gray-100 hover:bg-gray-50 cursor-pointer text-left transition-colors"
               >
-                <span className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-sm shrink-0">{meta.icon}</span>
+                <span className={`w-7 h-7 rounded-md flex items-center justify-center text-sm shrink-0 ${meta.color}`}>{meta.icon}</span>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-medium text-gray-700 truncate">{meta.label}</div>
                   {preview && <div className="text-[10px] text-gray-400 truncate">{preview}</div>}
                 </div>
+                {/* Right arrow indicator */}
+                <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             )
           })}
@@ -311,7 +308,6 @@ function NoSelectionPanel({ originalSlides }: { originalSlides: SlideData[] }) {
   const { getEffectiveSlideData, setSelection } = useEditor()
 
   // Find the first visible block-slide to show its block list
-  // For simplicity, scan slides for block-slide type
   for (let i = 0; i < originalSlides.length; i++) {
     const data = getEffectiveSlideData(i, originalSlides[i])
     if (data.type === 'block-slide') {
@@ -329,17 +325,17 @@ function NoSelectionPanel({ originalSlides }: { originalSlides: SlideData[] }) {
 function CollapsibleSection({ title, defaultOpen = true, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="border-t border-gray-100 pt-3">
+    <div className="border-t border-gray-100 pt-3 mt-1">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-full text-left cursor-pointer mb-2"
+        className="flex items-center gap-2 w-full text-left cursor-pointer mb-2.5 group"
       >
-        <svg className={`w-3 h-3 text-gray-400 transition-transform ${open ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
           <path d="M6.3 3.3a1 1 0 011.4 0l6 6a1 1 0 010 1.4l-6 6a1 1 0 01-1.4-1.4L11.58 10 6.3 4.7a1 1 0 010-1.4z" />
         </svg>
-        <span className="text-xs font-semibold text-gray-500 uppercase">{title}</span>
+        <span className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase group-hover:text-gray-700 transition-colors">{title}</span>
       </button>
-      {open && children}
+      {open && <div className="pl-1">{children}</div>}
     </div>
   )
 }
@@ -364,20 +360,24 @@ function BlockPropertyPanel({ slideIndex, blockId, originalSlides }: { slideInde
     )
   }
 
-  const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type }
+  const meta = BLOCK_TYPE_META[block.data.type] || { icon: '?', label: block.data.type, color: 'bg-gray-100 text-gray-500' }
+  const preview = getBlockPreview(block.data)
 
   return (
     <div className="p-4 space-y-0 overflow-y-auto h-full">
-      {/* Header: type icon + name + delete */}
-      <div className="flex items-center gap-2 pb-3">
-        <span className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center text-base shrink-0">{meta.icon}</span>
-        <span className="text-sm font-semibold text-gray-700 flex-1">{meta.label}</span>
+      {/* Header card */}
+      <div className="flex items-center gap-3 p-3 mb-1 bg-gray-50 rounded-lg border border-gray-100">
+        <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 ${meta.color}`}>{meta.icon}</span>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-gray-700">{meta.label}</div>
+          {preview && <div className="text-[10px] text-gray-400 truncate">{preview}</div>}
+        </div>
         <button
           onClick={() => removeBlock(slideIndex, blockId)}
-          className="text-xs text-red-400 hover:text-red-600 cursor-pointer px-1"
+          className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-50 cursor-pointer transition-colors"
           title="删除"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-red-400 hover:text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>

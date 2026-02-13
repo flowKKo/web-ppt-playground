@@ -62,12 +62,12 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-2 py-1 text-sm border border-gray-200 rounded mt-0.5"
+        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md mt-1 focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
       />
     </label>
   )
@@ -78,7 +78,10 @@ export default function BlockDataEditor({ data, onChange }: BlockDataEditorProps
   if (data.type === 'title-body') {
     return (
       <div className="space-y-2">
-        <div className="text-xs font-semibold text-gray-600 uppercase border-b border-gray-100 pb-1">文本内容</div>
+        <div className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase flex items-center gap-2">
+          <span>文本内容</span>
+          <span className="flex-1 h-px bg-gray-100" />
+        </div>
         <TextInput label="标题" value={data.title} onChange={(v) => onChange({ ...data, title: v })} />
         <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
       </div>
@@ -96,6 +99,7 @@ export default function BlockDataEditor({ data, onChange }: BlockDataEditorProps
         const newBlock = slideDataToBlock(newSlideData, data.type)
         onChange(newBlock)
       }}
+      isBlock
     />
   )
 }

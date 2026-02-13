@@ -2,21 +2,25 @@ import type { BlockData } from '../../data/types'
 
 type BlockType = BlockData['type']
 
+export const BLOCK_TYPE_META: Record<BlockType, { icon: string; label: string; color: string }> = {
+  'title-body': { icon: 'T', label: '标题文本', color: 'bg-blue-50 text-blue-600' },
+  'grid-item': { icon: '⊞', label: '网格', color: 'bg-emerald-50 text-emerald-600' },
+  'sequence': { icon: '→', label: '序列', color: 'bg-amber-50 text-amber-600' },
+  'compare': { icon: '⇔', label: '对比', color: 'bg-violet-50 text-violet-600' },
+  'funnel': { icon: '▽', label: '漏斗', color: 'bg-rose-50 text-rose-600' },
+  'concentric': { icon: '◎', label: '同心圆', color: 'bg-cyan-50 text-cyan-600' },
+  'hub-spoke': { icon: '✳', label: '轮辐', color: 'bg-orange-50 text-orange-600' },
+  'venn': { icon: '◑', label: '韦恩', color: 'bg-indigo-50 text-indigo-600' },
+  'chart': { icon: '▊', label: '图表', color: 'bg-teal-50 text-teal-600' },
+}
+
 interface BlockLayoutPickerProps {
   data: BlockData
   onChange: (data: BlockData) => void
 }
 
-const BLOCK_TYPES: { type: BlockType; label: string }[] = [
-  { type: 'title-body', label: '标题文本' },
-  { type: 'grid-item', label: '网格' },
-  { type: 'sequence', label: '序列' },
-  { type: 'compare', label: '对比' },
-  { type: 'funnel', label: '漏斗' },
-  { type: 'concentric', label: '同心圆' },
-  { type: 'hub-spoke', label: '轮辐' },
-  { type: 'venn', label: '韦恩' },
-  { type: 'chart', label: '图表' },
+const BLOCK_TYPES: BlockType[] = [
+  'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'chart',
 ]
 
 const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { value: string; label: string }[] }>> = {
@@ -117,7 +121,6 @@ function getCurrentVariant(data: BlockData): string | undefined {
 function convertBlockType(source: BlockData, targetType: BlockType): BlockData {
   if (source.type === targetType) return source
 
-  // Simple conversion with defaults
   switch (targetType) {
     case 'title-body':
       return { type: 'title-body', title: '新标题', body: '正文内容' }
@@ -169,44 +172,62 @@ export default function BlockLayoutPicker({ data, onChange }: BlockLayoutPickerP
 
   return (
     <div className="space-y-3">
-      {/* Block Type */}
+      {/* Block Type — 3-col icon grid */}
       <div>
-        <span className="text-xs font-semibold text-gray-600 uppercase">Block 类型</span>
-        <div className="flex flex-wrap gap-1.5 mt-1.5">
-          {BLOCK_TYPES.map(({ type, label }) => (
-            <button
-              key={type}
-              onClick={() => handleTypeClick(type)}
-              className={`px-2 py-0.5 text-xs rounded-full cursor-pointer transition-all ${
-                data.type === type
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <span className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase flex items-center gap-2">
+          <span>Block 类型</span>
+          <span className="flex-1 h-px bg-gray-100" />
+        </span>
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          {BLOCK_TYPES.map((type) => {
+            const meta = BLOCK_TYPE_META[type]
+            const isActive = data.type === type
+            return (
+              <button
+                key={type}
+                onClick={() => handleTypeClick(type)}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border cursor-pointer transition-all ${
+                  isActive
+                    ? 'ring-2 ring-blue-400 border-blue-200 bg-blue-50'
+                    : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                }`}
+              >
+                <span className={`w-8 h-8 rounded-md flex items-center justify-center text-base ${meta.color}`}>
+                  {meta.icon}
+                </span>
+                <span className={`text-[11px] leading-tight ${isActive ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                  {meta.label}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Style Variants */}
+      {/* Style Variants — 3-col button grid */}
       {variantConfig && (
         <div>
-          <span className="text-xs font-semibold text-gray-600 uppercase">样式变体</span>
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
-            {variantConfig.options.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleVariantClick(opt.value)}
-                className={`px-2 py-0.5 text-xs rounded-full cursor-pointer transition-all ${
-                  currentVariant === opt.value
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+          <span className="text-[11px] font-semibold text-gray-500 tracking-wide uppercase flex items-center gap-2">
+            <span>样式变体</span>
+            <span className="flex-1 h-px bg-gray-100" />
+          </span>
+          <div className="grid grid-cols-3 gap-1.5 mt-2">
+            {variantConfig.options.map((opt) => {
+              const isActive = currentVariant === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => handleVariantClick(opt.value)}
+                  className={`px-2 py-1.5 text-xs rounded-md border text-center cursor-pointer transition-all ${
+                    isActive
+                      ? 'bg-blue-500 text-white border-blue-500 font-medium'
+                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

@@ -11,13 +11,15 @@ interface SidebarProps {
   onClickSlide: (index: number) => void
   editMode?: boolean
   onAddSlide?: (data: SlideData) => void
+  onDeleteSlide?: (addedIndex: number) => void
   originalCount?: number
+  onBack?: () => void
 }
 
 const THUMB_W = 192 // thumbnail container width in px
 const SLIDE_W = 960  // render width for slide content
 
-export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, onAddSlide, originalCount }: SidebarProps) {
+export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, onAddSlide, onDeleteSlide, originalCount, onBack }: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [showAddPanel, setShowAddPanel] = useState(false)
   const scale = THUMB_W / SLIDE_W
@@ -35,6 +37,18 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
       className="fixed left-0 top-0 h-screen w-56 z-40 hidden xl:flex flex-col border-r overflow-y-auto"
       style={{ background: colors.card, borderColor: colors.border }}
     >
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium cursor-pointer transition-colors hover:bg-black/5 border-b shrink-0"
+          style={{ color: colors.textSecondary, borderColor: colors.border }}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 2L4 8l6 6" />
+          </svg>
+          返回
+        </button>
+      )}
       <div className="flex flex-col gap-3 p-4">
         {slides.map((slide, i) => {
           const isActive = i === activeIndex
@@ -44,7 +58,7 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
               key={i}
               ref={(el) => { thumbRefs.current[i] = el }}
               onClick={() => onClickSlide(i)}
-              className="w-full text-left cursor-pointer group"
+              className="w-full text-left cursor-pointer group relative"
             >
               {/* Slide number + badge */}
               <div className="flex items-center gap-1.5 mb-1">
@@ -63,7 +77,7 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
 
               {/* Thumbnail */}
               <div
-                className="w-full aspect-video overflow-hidden rounded-md transition-all"
+                className="w-full aspect-video overflow-hidden rounded-md transition-all relative"
                 style={{
                   border: isActive
                     ? `2px solid ${colors.accentNeutral}`
@@ -86,6 +100,22 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
                     </div>
                   </div>
                 </MotionConfig>
+
+                {/* Delete button for added slides */}
+                {editMode && isAdded && onDeleteSlide && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteSlide(i - (originalCount ?? 0))
+                    }}
+                    className="absolute top-1 right-1 w-6 h-6 rounded-md bg-red-500 text-white opacity-0 group-hover:opacity-100 shadow-sm flex items-center justify-center cursor-pointer transition-opacity"
+                    title="删除页面"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </button>
           )
@@ -96,13 +126,19 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
           <div>
             <button
               onClick={() => setShowAddPanel((v) => !v)}
-              className="w-full h-10 flex items-center justify-center rounded-md border-2 border-dashed cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50"
+              className="w-full h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50/60"
               style={{ borderColor: showAddPanel ? '#42A5F5' : colors.border }}
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={showAddPanel ? '#1565C0' : colors.textCaption} strokeWidth="2" strokeLinecap="round">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke={showAddPanel ? '#1565C0' : colors.textCaption} strokeWidth="2" strokeLinecap="round">
                 <line x1="10" y1="4" x2="10" y2="16" />
                 <line x1="4" y1="10" x2="16" y2="10" />
               </svg>
+              <span
+                className="text-xs font-medium"
+                style={{ color: showAddPanel ? '#1565C0' : colors.textCaption }}
+              >
+                添加页面
+              </span>
             </button>
 
             {showAddPanel && (
