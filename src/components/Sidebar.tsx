@@ -19,6 +19,9 @@ interface SidebarProps {
   onBack?: () => void
   width: number
   onResize: (width: number) => void
+  deckTitle?: string
+  deckDescription?: string
+  onUpdateDeckMeta?: (title: string, description: string) => void
 }
 
 const SLIDE_W = 960
@@ -59,6 +62,7 @@ export default function Sidebar({
   slides, activeIndex, onClickSlide, editMode,
   onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
   onReorderSlide, hasClipboard, onBack, width, onResize,
+  deckTitle, deckDescription, onUpdateDeckMeta,
 }: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -203,18 +207,38 @@ export default function Sidebar({
         onPointerMove={handleResizeMove}
         onPointerUp={handleResizeEnd}
       />
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 px-4 py-3 text-sm font-medium cursor-pointer transition-colors hover:bg-black/5 border-b shrink-0"
-          style={{ color: colors.textSecondary, borderColor: colors.border }}
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10 2L4 8l6 6" />
-          </svg>
-          返回
-        </button>
-      )}
+      <div className="shrink-0 border-b" style={{ borderColor: colors.border }}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-black/5 w-full"
+            style={{ color: colors.textSecondary }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 2L4 8l6 6" />
+            </svg>
+            返回
+          </button>
+        )}
+        {onUpdateDeckMeta && (
+          <div className="px-4 py-2 flex flex-col gap-1">
+            <input
+              className="text-sm font-semibold bg-transparent border-none outline-none w-full rounded px-1 -mx-1 hover:bg-black/5 focus:bg-black/5 transition-colors"
+              style={{ color: colors.textPrimary }}
+              value={deckTitle ?? ''}
+              placeholder="未命名文档"
+              onChange={(e) => onUpdateDeckMeta(e.target.value, deckDescription ?? '')}
+            />
+            <input
+              className="text-xs bg-transparent border-none outline-none w-full rounded px-1 -mx-1 hover:bg-black/5 focus:bg-black/5 transition-colors"
+              style={{ color: colors.textCaption }}
+              value={deckDescription ?? ''}
+              placeholder="添加描述..."
+              onChange={(e) => onUpdateDeckMeta(deckTitle ?? '', e.target.value)}
+            />
+          </div>
+        )}
+      </div>
       <div className="flex flex-col pt-0 pl-2 pr-5">
         {slides.map((slide, i) => {
           const isHighlighted = i === activeIndex && insertionIndex === null

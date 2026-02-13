@@ -15,17 +15,23 @@ interface SlideDeckProps {
   slides: SlideData[]
   onBack?: () => void
   deckId: string
+  deckTitle?: string
+  deckDescription?: string
+  onUpdateDeckMeta?: (title: string, description: string) => void
 }
 
-export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
+export default function SlideDeck({ slides, onBack, deckId, deckTitle, deckDescription, onUpdateDeckMeta }: SlideDeckProps) {
   return (
     <EditorProvider deckId={deckId} originalSlides={slides}>
-      <SlideDeckInner slides={slides} onBack={onBack} />
+      <SlideDeckInner slides={slides} onBack={onBack} deckTitle={deckTitle} deckDescription={deckDescription} onUpdateDeckMeta={onUpdateDeckMeta} />
     </EditorProvider>
   )
 }
 
-function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
+function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDeckMeta }: {
+  slides: SlideData[]; onBack?: () => void
+  deckTitle?: string; deckDescription?: string; onUpdateDeckMeta?: (title: string, description: string) => void
+}) {
   const mainRef = useRef<HTMLDivElement>(null)
   const {
     editMode, toggleEditMode, getEffectiveSlideData, setSelection,
@@ -219,6 +225,9 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         onBack={onBack}
         width={sidebarWidth}
         onResize={setSidebarWidth}
+        deckTitle={deckTitle}
+        deckDescription={deckDescription}
+        onUpdateDeckMeta={onUpdateDeckMeta}
       />
 
       {/* Main content — single page view */}
