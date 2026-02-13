@@ -10,6 +10,7 @@ import { EditorProvider, useEditor } from './editor/EditorProvider'
 import { InlineEditProvider } from './editor/InlineEditContext'
 import EditorToolbar from './editor/EditorToolbar'
 import PropertyPanel from './editor/PropertyPanel'
+import { exportDeck } from '../data/deck-io'
 
 interface SlideDeckProps {
   slides: SlideData[]
@@ -28,10 +29,7 @@ export default function SlideDeck({ slides, onBack, deckId, deckTitle, deckDescr
   )
 }
 
-function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDeckMeta }: {
-  slides: SlideData[]; onBack?: () => void
-  deckTitle?: string; deckDescription?: string; onUpdateDeckMeta?: (title: string, description: string) => void
-}) {
+function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDeckMeta }: Omit<SlideDeckProps, 'deckId'>) {
   const mainRef = useRef<HTMLDivElement>(null)
   const {
     editMode, toggleEditMode, getEffectiveSlideData, setSelection,
@@ -161,6 +159,12 @@ function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDe
     })
   }, [pendingTemplateSlideIndex, setSelection])
 
+  // ─── Export ───
+
+  const handleExport = useCallback(() => {
+    exportDeck(deckTitle || '未命名', deckDescription, effectiveSlides)
+  }, [deckTitle, deckDescription, effectiveSlides])
+
   // ─── Fullscreen ───
 
   const handleEnterFullscreen = useCallback(() => {
@@ -234,7 +238,7 @@ function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDe
       <div
         ref={mainRef}
         className="flex-1 flex items-center justify-center relative transition-all overflow-hidden h-screen sidebar-margin"
-        style={{ '--sidebar-w': `${sidebarWidth}px`, marginRight: editMode ? 320 : 0 } as React.CSSProperties}
+        style={{ '--sidebar-w': `${sidebarWidth}px` } as React.CSSProperties}
         onClick={(e) => {
           if (!editMode) return
           if (e.target === e.currentTarget) setSelection(null)
@@ -262,70 +266,89 @@ function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDe
         >
           {activeIndex + 1} / {allSlides.length}
         </div>
+
+        {/* Top-right buttons */}
+        <div className="absolute top-5 right-5 z-30 flex items-center gap-2">
+          {/* Export */}
+          <button
+            onClick={handleExport}
+            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+            style={{
+              color: colors.textSecondary,
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+            title="导出文档"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+
+          {/* Edit mode toggle */}
+          <button
+            onClick={toggleEditMode}
+            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+            style={{
+              color: editMode ? '#1565C0' : colors.textSecondary,
+              background: editMode ? '#E3F2FD' : colors.card,
+              border: `1px solid ${editMode ? '#42A5F5' : colors.border}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+            title={editMode ? '退出编辑' : '编辑模式'}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
+            </svg>
+          </button>
+
+          {/* Spotlight toggle */}
+          <button
+            onClick={() => setSpotlight((s) => !s)}
+            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+            style={{
+              color: spotlight ? '#1565C0' : colors.textSecondary,
+              background: spotlight ? '#E3F2FD' : colors.card,
+              border: `1px solid ${spotlight ? '#42A5F5' : colors.border}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+            title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+            </svg>
+          </button>
+
+          {/* Fullscreen button */}
+          <button
+            onClick={handleEnterFullscreen}
+            className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+            style={{
+              color: colors.textSecondary,
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+            title="全屏预览"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Editor toolbar */}
       {editMode && <EditorToolbar />}
 
-      {/* Top-right buttons */}
-      <div className="fixed top-5 right-5 z-50 flex items-center gap-2" style={{ right: editMode ? 332 : 20 }}>
-        {/* Edit mode toggle */}
-        <button
-          onClick={toggleEditMode}
-          className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-          style={{
-            color: editMode ? '#1565C0' : colors.textSecondary,
-            background: editMode ? '#E3F2FD' : colors.card,
-            border: `1px solid ${editMode ? '#42A5F5' : colors.border}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}
-          title={editMode ? '退出编辑' : '编辑模式'}
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
-          </svg>
-        </button>
-
-        {/* Spotlight toggle */}
-        <button
-          onClick={() => setSpotlight((s) => !s)}
-          className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-          style={{
-            color: spotlight ? '#1565C0' : colors.textSecondary,
-            background: spotlight ? '#E3F2FD' : colors.card,
-            border: `1px solid ${spotlight ? '#42A5F5' : colors.border}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}
-          title={spotlight ? '关闭聚光灯' : '开启聚光灯'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
-        </button>
-
-        {/* Fullscreen button */}
-        <button
-          onClick={handleEnterFullscreen}
-          className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors hover:bg-black/5"
-          style={{
-            color: colors.textSecondary,
-            background: colors.card,
-            border: `1px solid ${colors.border}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}
-          title="全屏预览"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Property panel */}
+      {/* Property panel — flex child, always gets full 320px */}
       {editMode && (
         <div
-          className="fixed top-0 right-0 h-screen w-80 z-40 border-l overflow-hidden flex flex-col"
+          className="w-80 shrink-0 h-screen border-l overflow-hidden flex flex-col"
           style={{ background: colors.card, borderColor: colors.border }}
         >
           <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: colors.border }}>
