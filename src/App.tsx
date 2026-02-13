@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import SlideDeck from './components/SlideDeck'
 import DeckSelector from './components/DeckSelector'
 import { decks, deckList } from './data/decks'
+import { importDeckFromFile } from './data/deck-io'
 import type { DeckMeta, SlideData } from './data/types'
 
 function getHashDeckId(): string | null {
@@ -65,13 +66,23 @@ export default function App() {
     })
   }, [])
 
+  const handleImportDeck = useCallback(async (file: File) => {
+    try {
+      const newDeck = await importDeckFromFile(file)
+      setRuntimeDecks(prev => ({ ...prev, [newDeck.id]: newDeck }))
+      window.location.hash = newDeck.id
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '导入失败')
+    }
+  }, [])
+
   if (!deckId) {
-    return <DeckSelector decks={allDeckList} onCreateDeck={handleCreateDeck} onDeleteDeck={handleDeleteDeck} />
+    return <DeckSelector decks={allDeckList} onCreateDeck={handleCreateDeck} onDeleteDeck={handleDeleteDeck} onImportDeck={handleImportDeck} />
   }
 
   const deck = allDecks[deckId]
   if (!deck) {
-    return <DeckSelector decks={allDeckList} onCreateDeck={handleCreateDeck} onDeleteDeck={handleDeleteDeck} />
+    return <DeckSelector decks={allDeckList} onCreateDeck={handleCreateDeck} onDeleteDeck={handleDeleteDeck} onImportDeck={handleImportDeck} />
   }
 
   return (

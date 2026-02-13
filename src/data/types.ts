@@ -227,3 +227,11 @@ export interface DeckMeta {
   date?: string
   slides: SlideData[]
 }
+
+// ─── Import / Export ───
+export interface DeckExportPayload {
+  version: 1
+  title: string
+  description?: string
+  slides: SlideData[]
+}

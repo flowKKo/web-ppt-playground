@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { colors, cardStyle, motionConfig } from '../theme/swiss'
 import type { DeckMeta } from '../data/types'
@@ -6,9 +7,11 @@ interface DeckSelectorProps {
   decks: DeckMeta[]
   onCreateDeck?: () => void
   onDeleteDeck?: (id: string) => void
+  onImportDeck?: (file: File) => void
 }
 
-export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck }: DeckSelectorProps) {
+export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImportDeck }: DeckSelectorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
   return (
     <div
       className="min-h-screen flex flex-col items-center px-6 py-20"
@@ -53,6 +56,34 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck }: Deck
               <span className="text-base font-medium" style={{ color: colors.textSecondary }}>
                 新建文档
               </span>
+            </motion.button>
+          )}
+          {onImportDeck && (
+            <motion.button
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-[14px] px-8 py-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-shadow hover:shadow-lg border-2 border-dashed"
+              style={{ borderColor: colors.border, background: colors.card }}
+              variants={motionConfig.child}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={colors.textCaption} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span className="text-base font-medium" style={{ color: colors.textSecondary }}>
+                导入文档
+              </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) onImportDeck(file)
+                  e.target.value = ''
+                }}
+              />
             </motion.button>
           )}
           {decks.map((deck) => (
