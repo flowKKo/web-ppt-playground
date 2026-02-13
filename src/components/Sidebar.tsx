@@ -355,13 +355,6 @@ export default function Sidebar({
                   onClick={() => { onCopySlide(contextMenu.slideIndex); closeMenu() }}
                 />
               )}
-              {onPasteSlide && (
-                <ContextMenuItem
-                  label="粘贴到此后"
-                  onClick={() => { onPasteSlide(contextMenu.slideIndex); closeMenu() }}
-                  disabled={!hasClipboard}
-                />
-              )}
               {onDuplicateSlide && (
                 <ContextMenuItem
                   label="复制为新页"
