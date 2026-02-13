@@ -45,7 +45,7 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   )
 
   const scrollToSlide = useCallback((index: number) => {
-    slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    slideRefs.current[index]?.scrollIntoView({ behavior: 'instant', block: 'center' })
     if (editMode) {
       setSelection({ type: 'content-box', slideIndex: index })
     }

@@ -28,7 +28,7 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
   useEffect(() => {
     const el = thumbRefs.current[activeIndex]
     if (el) {
-      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      el.scrollIntoView({ block: 'nearest', behavior: 'instant' })
     }
   }, [activeIndex])
 
