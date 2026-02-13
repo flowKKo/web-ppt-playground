@@ -30,33 +30,18 @@ export default function FullscreenOverlay({
 }: FullscreenOverlayProps) {
   const [direction, setDirection] = useState(0)
   const [revealedCount, setRevealedCount] = useState(0)
-  // Track whether a slide just changed — suppress transition on initial render
-  const slideJustChanged = useRef(true)
   const prevIndex = useRef(currentIndex)
 
   const currentSlide = slides[currentIndex]
   const blockCount = getBlockCount(currentSlide)
 
-  // Track slide changes for direction animation
+  // Reset revealed count synchronously during render to avoid one-frame flash
   if (currentIndex !== prevIndex.current) {
-    setDirection(currentIndex > prevIndex.current ? 1 : -1)
+    const goingForward = currentIndex > prevIndex.current
+    setDirection(goingForward ? 1 : -1)
     prevIndex.current = currentIndex
-    slideJustChanged.current = true
+    setRevealedCount(goingForward ? 0 : getBlockCount(slides[currentIndex]))
   }
-
-  // Reset revealed count when slide changes
-  useEffect(() => {
-    if (direction >= 0) {
-      setRevealedCount(0)
-    } else {
-      setRevealedCount(getBlockCount(slides[currentIndex]))
-    }
-    // Clear the "just changed" flag after the first render frame
-    const raf = requestAnimationFrame(() => {
-      slideJustChanged.current = false
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [currentIndex, direction, slides])
 
   const handleNext = useCallback(() => {
     if (spotlight && blockCount > 0 && revealedCount < blockCount) {
