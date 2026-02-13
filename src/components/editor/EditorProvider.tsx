@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback, useEffect, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import type { SlideData, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
 import type {
   DeckEditorState,
@@ -6,8 +6,9 @@ import type {
   ContentBox,
   OverlayElement,
   SelectionTarget,
+  SlideEntry,
 } from '../../data/editor-types'
-import { createDefaultDeckEditorState } from '../../data/editor-types'
+import { createDefaultDeckEditorState, remapSlideKeys, materializeSlideList } from '../../data/editor-types'
 
 export type ActiveTool = 'select' | 'text' | 'rect' | 'line'
 
@@ -21,6 +22,9 @@ interface EditorState {
   deckState: DeckEditorState
   history: DeckEditorState[]
   historyIndex: number
+  clipboard: SlideData | null
+  originalSlides: SlideData[]
+  pendingTemplateSlideIndex: number | null
 }
 
 type EditorAction =
@@ -44,6 +48,13 @@ type EditorAction =
   | { type: 'UPDATE_BLOCK_QUIET'; slideIndex: number; blockId: string; changes: Partial<ContentBlock> }
   | { type: 'REMOVE_BLOCK'; slideIndex: number; blockId: string }
   | { type: 'UPDATE_BLOCK_DATA'; slideIndex: number; blockId: string; data: BlockData }
+  | { type: 'INSERT_SLIDE'; position: number; data: SlideData }
+  | { type: 'DELETE_SLIDE'; position: number }
+  | { type: 'SET_CLIPBOARD'; data: SlideData }
+  | { type: 'PASTE_SLIDE'; afterPosition: number }
+  | { type: 'SET_ORIGINAL_SLIDES'; slides: SlideData[] }
+  | { type: 'SET_PENDING_TEMPLATE'; slideIndex: number | null }
+  | { type: 'MOVE_SLIDE'; fromIndex: number; toIndex: number }
   | { type: 'LOAD_STATE'; state: DeckEditorState }
   | { type: 'UNDO' }
   | { type: 'REDO' }
@@ -64,6 +75,24 @@ function pushHistory(state: EditorState): Pick<EditorState, 'history' | 'history
   return { history: truncated, historyIndex: truncated.length - 1 }
 }
 
+/** Adjust selection after insert/delete of a slide at position */
+function adjustSelection(sel: SelectionTarget, op: 'insert' | 'delete', at: number): SelectionTarget {
+  if (!sel) return null
+  const idx = sel.slideIndex
+  if (op === 'insert') {
+    if (idx >= at) {
+      return { ...sel, slideIndex: idx + 1 } as SelectionTarget
+    }
+    return sel
+  }
+  // delete
+  if (idx === at) return null
+  if (idx > at) {
+    return { ...sel, slideIndex: idx - 1 } as SelectionTarget
+  }
+  return sel
+}
+
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'TOGGLE_EDIT_MODE':
@@ -72,6 +101,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         editMode: !state.editMode,
         selection: null,
         activeTool: 'select',
+        pendingTemplateSlideIndex: !state.editMode ? state.pendingTemplateSlideIndex : null,
       }
     case 'SET_TOOL':
       return { ...state, activeTool: action.tool, selection: null }
@@ -177,25 +207,14 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       }
     }
     case 'ADD_SLIDE': {
-      const hist = pushHistory(state)
-      const existing = state.deckState.addedSlides ?? []
-      return {
-        ...state,
-        ...hist,
-        deckState: { ...state.deckState, addedSlides: [...existing, action.data] },
-      }
+      // Append to end via INSERT_SLIDE
+      const list = materializeSlideList(state.deckState, state.originalSlides.length)
+      return editorReducer(state, { type: 'INSERT_SLIDE', position: list.length, data: action.data })
     }
     case 'REMOVE_ADDED_SLIDE': {
-      const hist = pushHistory(state)
-      const existing = state.deckState.addedSlides ?? []
-      return {
-        ...state,
-        ...hist,
-        deckState: {
-          ...state.deckState,
-          addedSlides: existing.filter((_, i) => i !== action.index),
-        },
-      }
+      // Legacy: forward to DELETE_SLIDE (index is relative to added slides)
+      const origCount = state.originalSlides.length
+      return editorReducer(state, { type: 'DELETE_SLIDE', position: origCount + action.index })
     }
     // ─── Quiet slide data override (no history push, used during block drag) ───
     case 'SET_SLIDE_DATA_OVERRIDE_QUIET': {
@@ -307,6 +326,95 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       }
     }
 
+    // ─── Slide list management ───
+    case 'INSERT_SLIDE': {
+      const hist = pushHistory(state)
+      const list = materializeSlideList(state.deckState, state.originalSlides.length)
+      const newList = [...list]
+      newList.splice(action.position, 0, { kind: 'added', data: action.data })
+      const newSlides = remapSlideKeys(state.deckState.slides, { type: 'insert', at: action.position })
+      const pending = state.pendingTemplateSlideIndex
+      return {
+        ...state,
+        ...hist,
+        selection: adjustSelection(state.selection, 'insert', action.position),
+        pendingTemplateSlideIndex: pending !== null && pending >= action.position ? pending + 1 : pending,
+        deckState: { ...state.deckState, slideList: newList, slides: newSlides },
+      }
+    }
+    case 'DELETE_SLIDE': {
+      const list = materializeSlideList(state.deckState, state.originalSlides.length)
+      if (list.length <= 1) return state // don't delete last slide
+      const hist = pushHistory(state)
+      const newList = [...list]
+      newList.splice(action.position, 1)
+      const newSlides = remapSlideKeys(state.deckState.slides, { type: 'delete', at: action.position })
+      const pending = state.pendingTemplateSlideIndex
+      const newPending = pending === action.position ? null : pending !== null && pending > action.position ? pending - 1 : pending
+      return {
+        ...state,
+        ...hist,
+        selection: adjustSelection(state.selection, 'delete', action.position),
+        pendingTemplateSlideIndex: newPending,
+        deckState: { ...state.deckState, slideList: newList, slides: newSlides },
+      }
+    }
+    case 'SET_CLIPBOARD':
+      return { ...state, clipboard: action.data }
+    case 'PASTE_SLIDE': {
+      if (!state.clipboard) return state
+      const data = JSON.parse(JSON.stringify(state.clipboard)) as SlideData
+      // Forward to INSERT_SLIDE at afterPosition+1
+      return editorReducer(state, { type: 'INSERT_SLIDE', position: action.afterPosition + 1, data })
+    }
+    case 'SET_ORIGINAL_SLIDES':
+      return { ...state, originalSlides: action.slides }
+    case 'SET_PENDING_TEMPLATE':
+      return { ...state, pendingTemplateSlideIndex: action.slideIndex }
+    case 'MOVE_SLIDE': {
+      const { fromIndex, toIndex } = action
+      if (fromIndex === toIndex) return state
+      const hist = pushHistory(state)
+      const list = [...materializeSlideList(state.deckState, state.originalSlides.length)]
+      const [entry] = list.splice(fromIndex, 1)
+      list.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, entry)
+      // Rebuild slides Record: move the editor state from old index to new
+      const slides = { ...state.deckState.slides }
+      const movedState = slides[fromIndex]
+      // Remove old key and shift
+      delete slides[fromIndex]
+      const adjustedTo = toIndex > fromIndex ? toIndex - 1 : toIndex
+      const newSlides: Record<number, SlideEditorState> = {}
+      for (const [key, value] of Object.entries(slides)) {
+        let k = Number(key)
+        // Shift keys to fill the gap from removal
+        if (k > fromIndex) k -= 1
+        // Shift keys to make room for insertion
+        if (k >= adjustedTo) k += 1
+        newSlides[k] = value
+      }
+      if (movedState) newSlides[adjustedTo] = movedState
+      // Adjust selection
+      let newSel = state.selection
+      if (newSel) {
+        const si = newSel.slideIndex
+        if (si === fromIndex) {
+          newSel = { ...newSel, slideIndex: adjustedTo } as SelectionTarget
+        } else {
+          let adjusted = si
+          if (si > fromIndex) adjusted -= 1
+          if (adjusted >= adjustedTo) adjusted += 1
+          if (adjusted !== si) newSel = { ...newSel, slideIndex: adjusted } as SelectionTarget
+        }
+      }
+      return {
+        ...state,
+        ...hist,
+        selection: newSel,
+        deckState: { ...state.deckState, slideList: list, slides: newSlides },
+      }
+    }
+
     case 'LOAD_STATE':
       return { ...state, deckState: action.state }
 
@@ -373,6 +481,17 @@ interface EditorContextValue {
   addedSlides: SlideData[]
   addSlide: (data: SlideData) => void
   removeAddedSlide: (index: number) => void
+  allSlides: SlideData[]
+  slideEntries: SlideEntry[]
+  insertSlide: (position: number, data: SlideData) => void
+  deleteSlide: (position: number) => void
+  copySlide: (position: number) => void
+  pasteSlide: (afterPosition: number) => void
+  duplicateSlide: (position: number) => void
+  moveSlide: (fromIndex: number, toIndex: number) => void
+  clipboard: SlideData | null
+  pendingTemplateSlideIndex: number | null
+  setPendingTemplate: (slideIndex: number | null) => void
   setSlideDataOverrideQuiet: (slideIndex: number, data: SlideData) => void
   addBlock: (slideIndex: number, block: ContentBlock) => void
   updateBlock: (slideIndex: number, blockId: string, changes: Partial<ContentBlock>) => void
@@ -408,11 +527,12 @@ function loadFromStorage(deckId: string): DeckEditorState {
 
 interface EditorProviderProps {
   deckId: string
+  originalSlides: SlideData[]
   children: ReactNode
 }
 
-export function EditorProvider({ deckId, children }: EditorProviderProps) {
-  const [state, dispatch] = useReducer(editorReducer, deckId, (id) => ({
+export function EditorProvider({ deckId, originalSlides, children }: EditorProviderProps) {
+  const [state, dispatch] = useReducer(editorReducer, { deckId, originalSlides }, ({ deckId: id, originalSlides: slides }) => ({
     editMode: false,
     activeTool: 'select' as ActiveTool,
     selection: null,
@@ -420,7 +540,15 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     deckState: loadFromStorage(id),
     history: [] as DeckEditorState[],
     historyIndex: -1,
+    clipboard: null as SlideData | null,
+    originalSlides: slides,
+    pendingTemplateSlideIndex: null,
   }))
+
+  // Keep originalSlides in sync when prop changes
+  useEffect(() => {
+    dispatch({ type: 'SET_ORIGINAL_SLIDES', slides: originalSlides })
+  }, [originalSlides])
 
   // Persist to localStorage with debounce
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -549,6 +677,72 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     [],
   )
 
+  // ─── Slide list (new model) ───
+  const slideEntries = useMemo(
+    () => materializeSlideList(state.deckState, state.originalSlides.length),
+    [state.deckState, state.originalSlides.length],
+  )
+
+  const allSlides = useMemo(
+    () => slideEntries.map(e =>
+      e.kind === 'original' ? state.originalSlides[e.index] : e.data,
+    ),
+    [slideEntries, state.originalSlides],
+  )
+
+  const insertSlide = useCallback(
+    (position: number, data: SlideData) =>
+      dispatch({ type: 'INSERT_SLIDE', position, data }),
+    [],
+  )
+
+  const deleteSlide = useCallback(
+    (position: number) =>
+      dispatch({ type: 'DELETE_SLIDE', position }),
+    [],
+  )
+
+  const copySlide = useCallback(
+    (position: number) => {
+      const entry = slideEntries[position]
+      if (!entry) return
+      const original = entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      const data = getEffectiveSlideData(position, original)
+      dispatch({ type: 'SET_CLIPBOARD', data: JSON.parse(JSON.stringify(data)) })
+    },
+    [slideEntries, state.originalSlides, getEffectiveSlideData],
+  )
+
+  const pasteSlide = useCallback(
+    (afterPosition: number) =>
+      dispatch({ type: 'PASTE_SLIDE', afterPosition }),
+    [],
+  )
+
+  const duplicateSlide = useCallback(
+    (position: number) => {
+      const entry = slideEntries[position]
+      if (!entry) return
+      const original = entry.kind === 'original' ? state.originalSlides[entry.index] : entry.data
+      const data = getEffectiveSlideData(position, original)
+      const copy = JSON.parse(JSON.stringify(data)) as SlideData
+      dispatch({ type: 'INSERT_SLIDE', position: position + 1, data: copy })
+    },
+    [slideEntries, state.originalSlides, getEffectiveSlideData],
+  )
+
+  const moveSlide = useCallback(
+    (fromIndex: number, toIndex: number) =>
+      dispatch({ type: 'MOVE_SLIDE', fromIndex, toIndex }),
+    [],
+  )
+
+  const setPendingTemplate = useCallback(
+    (slideIndex: number | null) =>
+      dispatch({ type: 'SET_PENDING_TEMPLATE', slideIndex }),
+    [],
+  )
+
   const setSlideDataOverrideQuiet = useCallback(
     (slideIndex: number, data: SlideData) =>
       dispatch({ type: 'SET_SLIDE_DATA_OVERRIDE_QUIET', slideIndex, data }),
@@ -615,6 +809,17 @@ export function EditorProvider({ deckId, children }: EditorProviderProps) {
     addedSlides,
     addSlide,
     removeAddedSlide,
+    allSlides,
+    slideEntries,
+    insertSlide,
+    deleteSlide,
+    copySlide,
+    pasteSlide,
+    duplicateSlide,
+    moveSlide,
+    clipboard: state.clipboard,
+    pendingTemplateSlideIndex: state.pendingTemplateSlideIndex,
+    setPendingTemplate,
     setSlideDataOverrideQuiet,
     addBlock,
     updateBlock,

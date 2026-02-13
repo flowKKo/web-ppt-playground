@@ -55,10 +55,15 @@ export interface SlideEditorState {
   overlays: OverlayElement[]
 }
 
+export type SlideEntry =
+  | { kind: 'original'; index: number }
+  | { kind: 'added'; data: SlideData }
+
 export interface DeckEditorState {
   version: 1
   slides: Record<number, SlideEditorState>
-  addedSlides?: SlideData[]
+  addedSlides?: SlideData[]     // legacy field, migrated to slideList on first mutation
+  slideList?: SlideEntry[]
 }
 
 export type SelectionTarget =
@@ -100,4 +105,40 @@ export function createDefaultDeckEditorState(): DeckEditorState {
 
 export function getSlideEditorState(deck: DeckEditorState, index: number): SlideEditorState {
   return deck.slides[index] ?? { overlays: [] }
+}
+
+/** Re-key slides Record when inserting or deleting at a position */
+export function remapSlideKeys(
+  slides: Record<number, SlideEditorState>,
+  op: { type: 'insert' | 'delete'; at: number },
+): Record<number, SlideEditorState> {
+  const result: Record<number, SlideEditorState> = {}
+  for (const [key, value] of Object.entries(slides)) {
+    const k = Number(key)
+    if (op.type === 'insert') {
+      result[k >= op.at ? k + 1 : k] = value
+    } else {
+      if (k === op.at) continue // drop the deleted entry
+      result[k > op.at ? k - 1 : k] = value
+    }
+  }
+  return result
+}
+
+/** Build slideList from legacy state (handles addedSlides migration) */
+export function materializeSlideList(
+  deck: DeckEditorState,
+  originalCount: number,
+): SlideEntry[] {
+  if (deck.slideList) return deck.slideList
+  const list: SlideEntry[] = []
+  for (let i = 0; i < originalCount; i++) {
+    list.push({ kind: 'original', index: i })
+  }
+  if (deck.addedSlides) {
+    for (const data of deck.addedSlides) {
+      list.push({ kind: 'added', data })
+    }
+  }
+  return list
 }

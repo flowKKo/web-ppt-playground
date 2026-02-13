@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo, useState } from 'react'
+import { useRef, useCallback, useMemo, useState, useEffect } from 'react'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import Slide from './Slide'
@@ -20,7 +20,7 @@ interface SlideDeckProps {
 
 export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
   return (
-    <EditorProvider deckId={deckId}>
+    <EditorProvider deckId={deckId} originalSlides={slides}>
       <SlideDeckInner slides={slides} onBack={onBack} />
     </EditorProvider>
   )
@@ -28,16 +28,21 @@ export default function SlideDeck({ slides, onBack, deckId }: SlideDeckProps) {
 
 function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () => void }) {
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
-  const { editMode, toggleEditMode, getEffectiveSlideData, addedSlides, addSlide, removeAddedSlide, setSelection } = useEditor()
-
-  const allSlides = useMemo(
-    () => [...slides, ...addedSlides],
-    [slides, addedSlides],
-  )
+  const {
+    editMode, toggleEditMode, getEffectiveSlideData, setSelection,
+    allSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
+    setPendingTemplate, pendingTemplateSlideIndex,
+  } = useEditor()
 
   const [spotlight, setSpotlight] = useState(false)
   const activeIndex = useActiveSlideIndex(slideRefs, allSlides.length)
   const fullscreen = useFullscreen(allSlides.length)
+
+  // Default to edit mode on mount
+  useEffect(() => {
+    if (!editMode) toggleEditMode()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const effectiveSlides = useMemo(
     () => allSlides.map((s, i) => getEffectiveSlideData(i, s)),
@@ -51,8 +56,24 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
     }
   }, [editMode, setSelection])
 
+  // Insert a blank slide at position → enter edit mode → scroll + select → show template picker
+  const handleInsertBlankSlide = useCallback((position: number) => {
+    const blank: SlideData = { type: 'key-point', title: '新页面', body: '' }
+    insertSlide(position, blank)
+    if (!editMode) toggleEditMode()
+    setPendingTemplate(position)
+  }, [insertSlide, editMode, toggleEditMode, setPendingTemplate])
+
+  // Scroll to newly created slide when pendingTemplateSlideIndex is set
+  useEffect(() => {
+    if (pendingTemplateSlideIndex === null) return
+    requestAnimationFrame(() => {
+      slideRefs.current[pendingTemplateSlideIndex]?.scrollIntoView({ behavior: 'instant', block: 'center' })
+      setSelection({ type: 'content-box', slideIndex: pendingTemplateSlideIndex })
+    })
+  }, [pendingTemplateSlideIndex, setSelection])
+
   const handleEnterFullscreen = useCallback(() => {
-    // Exit edit mode when entering fullscreen
     if (editMode) toggleEditMode()
     fullscreen.enter(activeIndex)
   }, [fullscreen, activeIndex, editMode, toggleEditMode])
@@ -60,12 +81,22 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
   const handleExitFullscreen = useCallback(() => {
     const idx = fullscreen.currentIndex
     fullscreen.exit()
+    // Re-enter edit mode after exiting fullscreen
+    requestAnimationFrame(() => {
+      if (!editMode) toggleEditMode()
+    })
     if (idx !== null) {
       requestAnimationFrame(() => {
         slideRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       })
     }
-  }, [fullscreen])
+  }, [fullscreen, editMode, toggleEditMode])
+
+  // Reorder slides via drag (atomic operation)
+  const handleReorderSlide = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    moveSlide(fromIndex, toIndex)
+  }, [moveSlide])
 
   return (
     <div className="flex min-h-screen" style={{ background: colors.page }}>
@@ -75,9 +106,13 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         activeIndex={activeIndex}
         onClickSlide={scrollToSlide}
         editMode={editMode}
-        onAddSlide={addSlide}
-        onDeleteSlide={removeAddedSlide}
-        originalCount={slides.length}
+        onInsertBlankSlide={handleInsertBlankSlide}
+        onDeleteSlide={deleteSlide}
+        onCopySlide={copySlide}
+        onPasteSlide={pasteSlide}
+        onDuplicateSlide={duplicateSlide}
+        onReorderSlide={handleReorderSlide}
+        hasClipboard={clipboard !== null}
         onBack={onBack}
       />
 
@@ -87,7 +122,6 @@ function SlideDeckInner({ slides, onBack }: { slides: SlideData[]; onBack?: () =
         style={{ marginRight: editMode ? 320 : 0 }}
         onClick={(e) => {
           if (!editMode) return
-          // Only deselect when clicking directly on the scroll container (gaps between slides)
           if (e.target === e.currentTarget) setSelection(null)
         }}
       >

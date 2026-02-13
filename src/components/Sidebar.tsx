@@ -1,28 +1,69 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { MotionConfig } from 'framer-motion'
 import { colors } from '../theme/swiss'
 import type { SlideData } from '../data/types'
 import SlideContent from './SlideContent'
-import AddSlidePanel from './editor/AddSlidePanel'
 
 interface SidebarProps {
   slides: SlideData[]
   activeIndex: number
   onClickSlide: (index: number) => void
   editMode?: boolean
-  onAddSlide?: (data: SlideData) => void
-  onDeleteSlide?: (addedIndex: number) => void
-  originalCount?: number
+  onInsertBlankSlide?: (position: number) => void
+  onDeleteSlide?: (position: number) => void
+  onCopySlide?: (position: number) => void
+  onPasteSlide?: (afterPosition: number) => void
+  onDuplicateSlide?: (position: number) => void
+  onReorderSlide?: (fromIndex: number, toIndex: number) => void
+  hasClipboard?: boolean
   onBack?: () => void
 }
 
-const THUMB_W = 192 // thumbnail container width in px
-const SLIDE_W = 960  // render width for slide content
+const THUMB_W = 192
+const SLIDE_W = 960
 
-export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, onAddSlide, onDeleteSlide, originalCount, onBack }: SidebarProps) {
+interface ContextMenuState {
+  x: number
+  y: number
+  slideIndex: number
+}
+
+function ContextMenuItem({ label, onClick, danger, disabled }: {
+  label: string
+  onClick: () => void
+  danger?: boolean
+  disabled?: boolean
+}) {
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`w-full text-left px-3 py-1.5 text-xs cursor-pointer transition-colors ${
+        disabled
+          ? 'text-gray-300 cursor-default'
+          : danger
+            ? 'text-red-500 hover:bg-red-50'
+            : 'text-gray-700 hover:bg-black/5'
+      }`}
+    >
+      {label}
+    </button>
+  )
+}
+
+export default function Sidebar({
+  slides, activeIndex, onClickSlide, editMode,
+  onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
+  onReorderSlide, hasClipboard, onBack,
+}: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const [showAddPanel, setShowAddPanel] = useState(false)
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const scale = THUMB_W / SLIDE_W
+
+  // Drag state
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dropTarget, setDropTarget] = useState<number | null>(null)
 
   // Auto-scroll active thumbnail into view
   useEffect(() => {
@@ -31,6 +72,62 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
       el.scrollIntoView({ block: 'nearest', behavior: 'instant' })
     }
   }, [activeIndex])
+
+  // Close context menu on click outside or Escape
+  useEffect(() => {
+    if (!contextMenu) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setContextMenu(null)
+      }
+    }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setContextMenu(null)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [contextMenu])
+
+  const handleContextMenu = useCallback((e: React.MouseEvent, slideIndex: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setContextMenu({ x: e.clientX, y: e.clientY, slideIndex })
+  }, [])
+
+  const closeMenu = useCallback(() => setContextMenu(null), [])
+
+  // ─── Drag handlers ───
+  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDragIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(index))
+    // Make the drag image slightly transparent
+    const el = e.currentTarget as HTMLElement
+    requestAnimationFrame(() => el.style.opacity = '0.5')
+  }, [])
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = '1'
+    if (dragIndex !== null && dropTarget !== null && dragIndex !== dropTarget && onReorderSlide) {
+      onReorderSlide(dragIndex, dropTarget)
+    }
+    setDragIndex(null)
+    setDropTarget(null)
+  }, [dragIndex, dropTarget, onReorderSlide])
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDropTarget(index)
+  }, [])
+
+  const handleDragLeave = useCallback(() => {
+    setDropTarget(null)
+  }, [])
 
   return (
     <div
@@ -52,111 +149,150 @@ export default function Sidebar({ slides, activeIndex, onClickSlide, editMode, o
       <div className="flex flex-col gap-3 p-4">
         {slides.map((slide, i) => {
           const isActive = i === activeIndex
-          const isAdded = originalCount != null && i >= originalCount
+          const isDragOver = dropTarget === i && dragIndex !== null && dragIndex !== i
           return (
-            <button
+            <div
               key={i}
-              ref={(el) => { thumbRefs.current[i] = el }}
-              onClick={() => onClickSlide(i)}
-              className="w-full text-left cursor-pointer group relative"
+              draggable
+              onDragStart={(e) => handleDragStart(e, i)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => handleDragOver(e, i)}
+              onDragLeave={handleDragLeave}
+              className={`relative ${isDragOver ? 'pt-1' : ''}`}
             >
-              {/* Slide number + badge */}
-              <div className="flex items-center gap-1.5 mb-1">
-                <span
-                  className="text-xs font-medium"
-                  style={{ color: isActive ? colors.accentNeutral : colors.textCaption }}
-                >
-                  {i + 1}
-                </span>
-                {isAdded && (
-                  <span className="text-[9px] leading-none px-1 py-0.5 rounded bg-blue-500 text-white font-medium">
-                    新增
-                  </span>
-                )}
-              </div>
+              {/* Drop indicator line */}
+              {isDragOver && dragIndex !== null && i < dragIndex && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 rounded bg-blue-500" />
+              )}
 
-              {/* Thumbnail */}
-              <div
-                className="w-full aspect-video overflow-hidden rounded-md transition-all relative"
-                style={{
-                  border: isActive
-                    ? `2px solid ${colors.accentNeutral}`
-                    : `1px solid ${colors.border}`,
-                  boxShadow: isActive ? `0 0 0 2px ${colors.accentNeutral}33` : 'none',
-                }}
+              <button
+                ref={(el) => { thumbRefs.current[i] = el }}
+                onClick={() => onClickSlide(i)}
+                onContextMenu={(e) => handleContextMenu(e, i)}
+                className="w-full text-left cursor-pointer group relative"
               >
-                <MotionConfig reducedMotion="always">
-                  <div
-                    className="pointer-events-none origin-top-left"
-                    style={{
-                      width: SLIDE_W,
-                      height: SLIDE_W * 9 / 16,
-                      transform: `scale(${scale})`,
-                      background: colors.slide,
-                    }}
+                {/* Slide number */}
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: isActive ? colors.accentNeutral : colors.textCaption }}
                   >
-                    <div className="w-full h-full px-20 py-16 flex flex-col justify-center">
-                      <SlideContent data={slide} slideIndex={i} />
-                    </div>
-                  </div>
-                </MotionConfig>
+                    {i + 1}
+                  </span>
+                </div>
 
-                {/* Delete button for added slides */}
-                {editMode && isAdded && onDeleteSlide && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDeleteSlide(i - (originalCount ?? 0))
-                    }}
-                    className="absolute top-1 right-1 w-6 h-6 rounded-md bg-red-500 text-white opacity-0 group-hover:opacity-100 shadow-sm flex items-center justify-center cursor-pointer transition-opacity"
-                    title="删除页面"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </button>
+                {/* Thumbnail */}
+                <div
+                  className="w-full aspect-video overflow-hidden rounded-md transition-all relative"
+                  style={{
+                    border: isActive
+                      ? `2px solid ${colors.accentNeutral}`
+                      : `1px solid ${colors.border}`,
+                    boxShadow: isActive ? `0 0 0 2px ${colors.accentNeutral}33` : 'none',
+                  }}
+                >
+                  <MotionConfig reducedMotion="always">
+                    <div
+                      className="pointer-events-none origin-top-left"
+                      style={{
+                        width: SLIDE_W,
+                        height: SLIDE_W * 9 / 16,
+                        transform: `scale(${scale})`,
+                        background: colors.slide,
+                      }}
+                    >
+                      <div className="w-full h-full px-20 py-16 flex flex-col justify-center">
+                        <SlideContent data={slide} slideIndex={i} />
+                      </div>
+                    </div>
+                  </MotionConfig>
+                </div>
+              </button>
+
+              {/* Drop indicator line (below) */}
+              {isDragOver && dragIndex !== null && i > dragIndex && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded bg-blue-500" />
+              )}
+            </div>
           )
         })}
 
         {/* Add slide button */}
-        {editMode && onAddSlide && (
-          <div>
-            <button
-              onClick={() => setShowAddPanel((v) => !v)}
-              className="w-full h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50/60"
-              style={{ borderColor: showAddPanel ? '#42A5F5' : colors.border }}
+        {onInsertBlankSlide && (
+          <button
+            onClick={() => onInsertBlankSlide(slides.length)}
+            className="w-full h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50/60"
+            style={{ borderColor: colors.border }}
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke={colors.textCaption} strokeWidth="2" strokeLinecap="round">
+              <line x1="10" y1="4" x2="10" y2="16" />
+              <line x1="4" y1="10" x2="16" y2="10" />
+            </svg>
+            <span
+              className="text-xs font-medium"
+              style={{ color: colors.textCaption }}
             >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke={showAddPanel ? '#1565C0' : colors.textCaption} strokeWidth="2" strokeLinecap="round">
-                <line x1="10" y1="4" x2="10" y2="16" />
-                <line x1="4" y1="10" x2="16" y2="10" />
-              </svg>
-              <span
-                className="text-xs font-medium"
-                style={{ color: showAddPanel ? '#1565C0' : colors.textCaption }}
-              >
-                添加页面
-              </span>
-            </button>
-
-            {showAddPanel && (
-              <div
-                className="mt-2 rounded-lg border"
-                style={{ background: colors.card, borderColor: colors.border }}
-              >
-                <AddSlidePanel
-                  onAdd={(data) => {
-                    onAddSlide(data)
-                    setShowAddPanel(false)
-                  }}
-                />
-              </div>
-            )}
-          </div>
+              添加页面
+            </span>
+          </button>
         )}
       </div>
+
+      {/* Context menu */}
+      {contextMenu && (
+        <div
+          ref={menuRef}
+          className="fixed z-[100] py-1 rounded-lg border shadow-lg min-w-[140px]"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+            background: colors.card,
+            borderColor: colors.border,
+          }}
+        >
+          {onCopySlide && (
+            <ContextMenuItem
+              label="复制"
+              onClick={() => { onCopySlide(contextMenu.slideIndex); closeMenu() }}
+            />
+          )}
+          {onPasteSlide && (
+            <ContextMenuItem
+              label="粘贴到此后"
+              onClick={() => { onPasteSlide(contextMenu.slideIndex); closeMenu() }}
+              disabled={!hasClipboard}
+            />
+          )}
+          {onDuplicateSlide && (
+            <ContextMenuItem
+              label="复制为新页"
+              onClick={() => { onDuplicateSlide(contextMenu.slideIndex); closeMenu() }}
+            />
+          )}
+          <div className="my-1 border-t" style={{ borderColor: colors.border }} />
+          {onInsertBlankSlide && (
+            <ContextMenuItem
+              label="在此前插入"
+              onClick={() => { onInsertBlankSlide(contextMenu.slideIndex); closeMenu() }}
+            />
+          )}
+          {onInsertBlankSlide && (
+            <ContextMenuItem
+              label="在此后插入"
+              onClick={() => { onInsertBlankSlide(contextMenu.slideIndex + 1); closeMenu() }}
+            />
+          )}
+          <div className="my-1 border-t" style={{ borderColor: colors.border }} />
+          {onDeleteSlide && (
+            <ContextMenuItem
+              label="删除"
+              onClick={() => { onDeleteSlide(contextMenu.slideIndex); closeMenu() }}
+              danger
+              disabled={slides.length <= 1}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }

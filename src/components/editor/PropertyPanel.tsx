@@ -5,6 +5,9 @@ import LayoutPicker from './LayoutPicker'
 import BlockLayoutPicker, { BLOCK_TYPE_META } from './BlockLayoutPicker'
 import BlockDataEditor from './BlockDataEditor'
 import AddBlockPanel from './AddBlockPanel'
+import { TYPE_LIST } from './TypeThumbnails'
+import { createDefaultSlide } from '../../data/type-converter'
+import { colors } from '../../theme/swiss'
 import type { SlideData, ContentBlock, BlockData } from '../../data/types'
 import type { TextOverlay, RectOverlay, LineOverlay, OverlayElement } from '../../data/editor-types'
 
@@ -63,7 +66,27 @@ export default function PropertyPanel({ originalSlides }: PropertyPanelProps) {
     removeBlock,
     updateBlockData,
     addBlock,
+    pendingTemplateSlideIndex,
+    setPendingTemplate,
   } = useEditor()
+
+  // Show template picker for newly created blank slides
+  if (
+    pendingTemplateSlideIndex !== null &&
+    selection?.type === 'content-box' &&
+    selection.slideIndex === pendingTemplateSlideIndex
+  ) {
+    return (
+      <TemplatePicker
+        slideIndex={pendingTemplateSlideIndex}
+        onPick={(data) => {
+          setSlideDataOverride(pendingTemplateSlideIndex, data)
+          setPendingTemplate(null)
+        }}
+        onSkip={() => setPendingTemplate(null)}
+      />
+    )
+  }
 
   // No selection — show block list overview for block-slide pages, or generic hint
   if (!selection) {
@@ -408,6 +431,86 @@ function BlockPropertyPanel({ slideIndex, blockId, originalSlides }: { slideInde
           <NumberField label="高 (%)" value={block.height} onChange={(v) => updateBlock(slideIndex, blockId, { height: v })} min={10} step={0.5} />
         </div>
       </CollapsibleSection>
+    </div>
+  )
+}
+
+// ─── Template Picker (shown for newly created blank slides) ───
+
+function BlockSlideThumb() {
+  const c = '#4CAF50'
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <rect x="8" y="4" width="30" height="12" rx="2" fill={c} opacity={0.3} stroke={c} strokeWidth="1" />
+      <rect x="42" y="4" width="30" height="12" rx="2" fill={c} opacity={0.3} stroke={c} strokeWidth="1" />
+      <rect x="8" y="20" width="64" height="20" rx="2" fill={c} opacity={0.2} stroke={c} strokeWidth="1" strokeDasharray="3 2" />
+      <text x="40" y="33" textAnchor="middle" fontSize="8" fill={c} fontWeight="600">+</text>
+    </svg>
+  )
+}
+
+function TemplatePicker({ slideIndex, onPick, onSkip }: {
+  slideIndex: number
+  onPick: (data: SlideData) => void
+  onSkip: () => void
+}) {
+  return (
+    <div className="p-4 space-y-4 overflow-y-auto h-full">
+      <div>
+        <h3 className="text-sm font-semibold" style={{ color: colors.textPrimary }}>
+          选择页面模板
+        </h3>
+        <p className="text-xs mt-1" style={{ color: colors.textCaption }}>
+          为第 {slideIndex + 1} 页选择一种布局
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        {/* Block slide (free layout) */}
+        <button
+          onClick={() => onPick(createDefaultSlide('block-slide'))}
+          className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border-2 cursor-pointer transition-all hover:border-green-400 hover:bg-green-50/40 hover:shadow-sm"
+          style={{ borderColor: '#4CAF50' + '66' }}
+        >
+          <div
+            className="w-full aspect-video rounded overflow-hidden"
+            style={{ background: colors.slide }}
+          >
+            <BlockSlideThumb />
+          </div>
+          <span className="text-[11px] font-semibold" style={{ color: '#4CAF50' }}>
+            自由布局
+          </span>
+        </button>
+
+        {/* Standard slide types */}
+        {TYPE_LIST.map(({ type, label, Thumb }) => (
+          <button
+            key={type}
+            onClick={() => onPick(createDefaultSlide(type))}
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-sm"
+            style={{ borderColor: colors.border }}
+          >
+            <div
+              className="w-full aspect-video rounded overflow-hidden"
+              style={{ background: colors.slide }}
+            >
+              <Thumb />
+            </div>
+            <span className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
+              {label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={onSkip}
+        className="w-full text-center text-xs py-2 cursor-pointer rounded-md transition-colors hover:bg-black/5"
+        style={{ color: colors.textCaption }}
+      >
+        保持空白
+      </button>
     </div>
   )
 }
