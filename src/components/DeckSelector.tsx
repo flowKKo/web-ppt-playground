@@ -23,69 +23,76 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImpo
         animate="visible"
         variants={motionConfig.stagger}
       >
-        <motion.div variants={motionConfig.child} className="flex flex-col gap-3">
-          <h1
-            className="text-5xl font-bold leading-tight"
-            style={{ color: colors.textPrimary }}
-          >
-            Web PPT
-          </h1>
-          <p
-            className="text-xl"
-            style={{ color: colors.textSecondary }}
-          >
-            {decks.length} 个演示文稿
-          </p>
+        {/* Header: title + action buttons */}
+        <motion.div variants={motionConfig.child} className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-3">
+            <h1
+              className="text-5xl font-bold leading-tight"
+              style={{ color: colors.textPrimary }}
+            >
+              Web PPT
+            </h1>
+            <p
+              className="text-xl"
+              style={{ color: colors.textSecondary }}
+            >
+              {decks.length} 个演示文稿
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {onImportDeck && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="h-9 px-4 flex items-center gap-2 rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+                style={{
+                  color: colors.textSecondary,
+                  background: colors.card,
+                  border: `1px solid ${colors.border}`,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span className="text-sm font-medium">导入</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) onImportDeck(file)
+                    e.target.value = ''
+                  }}
+                />
+              </button>
+            )}
+            {onCreateDeck && (
+              <button
+                onClick={onCreateDeck}
+                className="h-9 px-4 flex items-center gap-2 rounded-lg cursor-pointer transition-colors hover:opacity-90"
+                style={{
+                  color: '#fff',
+                  background: colors.textPrimary,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span className="text-sm font-medium">新建</span>
+              </button>
+            )}
+          </div>
         </motion.div>
 
+        {/* Deck grid */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={motionConfig.stagger}
         >
-          {onCreateDeck && (
-            <motion.button
-              onClick={onCreateDeck}
-              className="rounded-[14px] px-8 py-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-shadow hover:shadow-lg border-2 border-dashed"
-              style={{ borderColor: colors.border, background: colors.card }}
-              variants={motionConfig.child}
-            >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={colors.textCaption} strokeWidth="1.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span className="text-base font-medium" style={{ color: colors.textSecondary }}>
-                新建文档
-              </span>
-            </motion.button>
-          )}
-          {onImportDeck && (
-            <motion.button
-              onClick={() => fileInputRef.current?.click()}
-              className="rounded-[14px] px-8 py-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-shadow hover:shadow-lg border-2 border-dashed"
-              style={{ borderColor: colors.border, background: colors.card }}
-              variants={motionConfig.child}
-            >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={colors.textCaption} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              <span className="text-base font-medium" style={{ color: colors.textSecondary }}>
-                导入文档
-              </span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) onImportDeck(file)
-                  e.target.value = ''
-                }}
-              />
-            </motion.button>
-          )}
           {decks.map((deck) => (
             <motion.a
               key={deck.id}

@@ -60,10 +60,14 @@ export async function importDeckFromFile(file: File): Promise<DeckMeta> {
     }
   }
 
+  const now = new Date()
+  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
   return {
     id: `deck-${Date.now()}`,
     title: obj.title as string,
     description: typeof obj.description === 'string' ? obj.description : undefined,
+    date,
     slides: obj.slides as SlideData[],
   }
 }
