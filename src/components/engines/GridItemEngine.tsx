@@ -53,7 +53,7 @@ function SolidCard({ item, index }: { item: GridItemEntry; index: number }) {
   return (
     <motion.div
       variants={motionConfig.child}
-      className="rounded-xl p-5"
+      className="rounded-xl p-5 flex flex-col justify-center h-full"
       style={{ background: colors.card, boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}
     >
       <CardContent item={item} index={index} />
@@ -65,7 +65,7 @@ function OutlineCard({ item, index }: { item: GridItemEntry; index: number }) {
   return (
     <motion.div
       variants={motionConfig.child}
-      className="rounded-xl p-5"
+      className="rounded-xl p-5 flex flex-col justify-center h-full"
       style={{ border: `2px solid ${colors.border}` }}
     >
       <CardContent item={item} index={index} />
@@ -77,7 +77,7 @@ function SidelineCard({ item, index, color }: { item: GridItemEntry; index: numb
   return (
     <motion.div
       variants={motionConfig.child}
-      className="rounded-lg p-5"
+      className="rounded-lg p-5 flex flex-col justify-center h-full"
       style={{ borderLeft: `4px solid ${color}`, background: colors.card }}
     >
       <CardContent item={item} index={index} />
@@ -89,7 +89,7 @@ function ToplineCard({ item, index, color }: { item: GridItemEntry; index: numbe
   return (
     <motion.div
       variants={motionConfig.child}
-      className="rounded-lg p-5"
+      className="rounded-lg p-5 flex flex-col justify-center h-full"
       style={{ borderTop: `4px solid ${color}`, background: colors.card }}
     >
       <CardContent item={item} index={index} />
@@ -99,7 +99,7 @@ function ToplineCard({ item, index, color }: { item: GridItemEntry; index: numbe
 
 function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: number; color: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex flex-col items-center text-center">
+    <motion.div variants={motionConfig.child} className="flex flex-col items-center text-center justify-center h-full">
       <div
         className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3"
         style={{ backgroundColor: color }}
@@ -113,12 +113,16 @@ function TopCircleCard({ item, index, color }: { item: GridItemEntry; index: num
 
 export function GridItemDiagram({ items, variant, columns }: { items: GridItemEntry[]; variant: GridItemSlideData['variant']; columns?: number }) {
   const cols = getColumns(items.length, columns)
+  const rows = Math.ceil(items.length / cols)
   const palette = generateGradientColors(items.length)
 
   return (
     <div
-      className="grid gap-4"
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      className="grid gap-4 flex-1 min-h-0"
+      style={{
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+      }}
     >
       {items.map((item, i) => {
         switch (variant) {
@@ -141,7 +145,7 @@ export function GridItemDiagram({ items, variant, columns }: { items: GridItemEn
 export default function GridItemEngine({ title, body, items, variant, columns }: GridItemSlideData) {
   return (
     <motion.div
-      className="flex flex-col gap-6 h-full justify-center"
+      className="flex flex-col gap-6 h-full"
       variants={motionConfig.stagger}
       initial="hidden"
       whileInView="visible"

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { BlockData } from '../../data/types'
 import { colors, motionConfig } from '../../theme/swiss'
 import EditableText from '../editor/EditableText'
@@ -13,6 +14,10 @@ import { ChartDiagram } from '../slides/ChartSlide'
 interface BlockRendererProps {
   data: BlockData
   blockId: string
+}
+
+function DiagramWrapper({ children }: { children: ReactNode }) {
+  return <div className="flex-1 min-h-0 w-full flex flex-col">{children}</div>
 }
 
 function TitleBodyBlock({ data }: { data: Extract<BlockData, { type: 'title-body' }> }) {
@@ -35,24 +40,26 @@ export default function BlockRenderer({ data }: BlockRendererProps) {
     case 'title-body':
       return <TitleBodyBlock data={data} />
     case 'grid-item':
-      return <GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} />
+      return <DiagramWrapper><GridItemDiagram items={data.items} variant={data.variant} columns={data.columns} /></DiagramWrapper>
     case 'sequence':
-      return <SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} />
+      return <DiagramWrapper><SequenceDiagram steps={data.steps} variant={data.variant} direction={data.direction} /></DiagramWrapper>
     case 'compare':
-      return <CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} />
+      return <DiagramWrapper><CompareDiagram mode={data.mode} sides={data.sides} quadrantItems={data.quadrantItems} xAxis={data.xAxis} yAxis={data.yAxis} visible={data.visible} hidden={data.hidden} /></DiagramWrapper>
     case 'funnel':
-      return <FunnelDiagram layers={data.layers} variant={data.variant} />
+      return <DiagramWrapper><FunnelDiagram layers={data.layers} variant={data.variant} /></DiagramWrapper>
     case 'concentric':
-      return <ConcentricDiagram rings={data.rings} variant={data.variant} />
+      return <DiagramWrapper><ConcentricDiagram rings={data.rings} variant={data.variant} /></DiagramWrapper>
     case 'hub-spoke':
-      return <HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} />
+      return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} /></DiagramWrapper>
     case 'venn':
-      return <VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} />
+      return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} /></DiagramWrapper>
     case 'chart':
       return (
-        <div className="h-full rounded-xl overflow-hidden" style={{ background: colors.card, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', padding: '12px 8px 4px' }}>
-          <ChartDiagram chartType={data.chartType} bars={data.bars} slices={data.slices} innerRadius={data.innerRadius} categories={data.categories} lineSeries={data.lineSeries} indicators={data.indicators} radarSeries={data.radarSeries} />
-        </div>
+        <DiagramWrapper>
+          <div className="flex-1 min-h-0 rounded-xl overflow-hidden" style={{ background: colors.card, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', padding: '12px 8px 4px' }}>
+            <ChartDiagram chartType={data.chartType} bars={data.bars} slices={data.slices} innerRadius={data.innerRadius} categories={data.categories} lineSeries={data.lineSeries} indicators={data.indicators} radarSeries={data.radarSeries} />
+          </div>
+        </DiagramWrapper>
       )
   }
 }
