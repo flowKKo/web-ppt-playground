@@ -16,7 +16,6 @@ interface SidebarProps {
   onDuplicateSlide?: (position: number) => void
   onReorderSlide?: (fromIndex: number, toIndex: number) => void
   hasClipboard?: boolean
-  onBack?: () => void
   width: number
   onResize: (width: number) => void
 }
@@ -58,7 +57,7 @@ function ContextMenuItem({ label, onClick, danger, disabled }: {
 export default function Sidebar({
   slides, activeIndex, onClickSlide, editMode,
   onInsertBlankSlide, onDeleteSlide, onCopySlide, onPasteSlide, onDuplicateSlide,
-  onReorderSlide, hasClipboard, onBack, width, onResize,
+  onReorderSlide, hasClipboard, width, onResize,
 }: SidebarProps) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -218,21 +217,7 @@ export default function Sidebar({
         onPointerMove={handleResizeMove}
         onPointerUp={handleResizeEnd}
       />
-      <div className="shrink-0 border-b" style={{ borderColor: colors.border }}>
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-black/5 w-full"
-            style={{ color: colors.textSecondary }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 2L4 8l6 6" />
-            </svg>
-            返回
-          </button>
-        )}
-      </div>
-      <div className="flex flex-col pt-0 pl-2 pr-5">
+      <div className="flex flex-col pt-2 pl-2 pr-5">
         {slides.map((slide, i) => {
           const isHighlighted = i === activeIndex && insertionIndex === null
           const isDragOver = dropTarget === i && dragIndex !== null && dragIndex !== i
