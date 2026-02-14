@@ -3,7 +3,7 @@ import * as echarts from 'echarts/core'
 import { LineChart as ELineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, chartPalette } from '../theme/swiss'
+import { echartsTheme, colors, chartPalette, getChartPalette } from '../theme/swiss'
 
 echarts.use([ELineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 echarts.registerTheme('swiss', echartsTheme)
@@ -12,9 +12,11 @@ interface LineChartProps {
   categories: string[]
   series: { name: string; data: number[]; area?: boolean }[]
   height?: number
+  colorPalette?: string
 }
 
-export default function LineChart({ categories, series, height }: LineChartProps) {
+export default function LineChart({ categories, series, height, colorPalette }: LineChartProps) {
+  const pal = getChartPalette(colorPalette)
   const hasLegend = series.length > 1
 
   const option = {
@@ -43,7 +45,7 @@ export default function LineChart({ categories, series, height }: LineChartProps
       type: 'value' as const,
     },
     series: series.map((s, i) => {
-      const color = chartPalette[i % chartPalette.length]
+      const color = pal[i % pal.length]
       return {
         name: s.name,
         type: 'line' as const,

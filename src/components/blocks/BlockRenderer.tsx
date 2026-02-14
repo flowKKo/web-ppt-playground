@@ -116,7 +116,7 @@ export default function BlockRenderer({ data, blockId, slideIndex }: BlockRender
       return (
         <DiagramWrapper>
           <div className="flex-1 min-h-0 rounded-xl overflow-hidden" style={{ background: colors.card, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', padding: '12px 8px 4px' }}>
-            <ChartDiagram chartType={data.chartType} bars={data.bars} slices={data.slices} innerRadius={data.innerRadius} categories={data.categories} lineSeries={data.lineSeries} indicators={data.indicators} radarSeries={data.radarSeries} />
+            <ChartDiagram chartType={data.chartType} bars={data.bars} slices={data.slices} innerRadius={data.innerRadius} categories={data.categories} lineSeries={data.lineSeries} indicators={data.indicators} radarSeries={data.radarSeries} colorPalette={data.colorPalette} />
           </div>
         </DiagramWrapper>
       )

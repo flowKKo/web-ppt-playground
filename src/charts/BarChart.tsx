@@ -3,7 +3,7 @@ import * as echarts from 'echarts/core'
 import { BarChart as EBarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, chartPalette } from '../theme/swiss'
+import { echartsTheme, colors, chartPalette, getChartPalette } from '../theme/swiss'
 
 echarts.use([EBarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 echarts.registerTheme('swiss', echartsTheme)
@@ -18,9 +18,11 @@ interface BarChartProps {
   categories: string[]
   series: { name: string; data: number[]; color?: string }[]
   height?: number
+  colorPalette?: string
 }
 
-export default function BarChart({ categories, series, height }: BarChartProps) {
+export default function BarChart({ categories, series, height, colorPalette }: BarChartProps) {
+  const pal = getChartPalette(colorPalette)
   const hasLegend = series.length > 1
   const option = {
     tooltip: { trigger: 'axis' as const },
@@ -45,7 +47,7 @@ export default function BarChart({ categories, series, height }: BarChartProps) 
     series: series.map((s, i) => {
       const baseColor = s.color
         ? (semanticColorMap[s.color] || s.color)
-        : chartPalette[i % chartPalette.length]
+        : pal[i % pal.length]
 
       return {
         name: s.name,

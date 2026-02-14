@@ -81,16 +81,22 @@ export const echartsTheme = {
 
 /** Preset color palettes — 10 schemes × 6 colors each */
 export const COLOR_PALETTES: Record<string, { name: string; colors: string[] }> = {
-  default:  { name: '经典',   colors: ['#546E7A', '#78909C', '#4CAF50', '#81C784', '#E57373', '#EF9A9A'] },
-  ocean:    { name: '海洋',   colors: ['#0D47A1', '#1565C0', '#1976D2', '#2196F3', '#42A5F5', '#64B5F6'] },
-  forest:   { name: '翠林',   colors: ['#1B5E20', '#2E7D32', '#388E3C', '#43A047', '#66BB6A', '#81C784'] },
-  sunset:   { name: '日暮',   colors: ['#E65100', '#F4511E', '#FF7043', '#EC407A', '#AB47BC', '#7E57C2'] },
-  lavender: { name: '薰衣草', colors: ['#4A148C', '#6A1B9A', '#7B1FA2', '#9C27B0', '#BA68C8', '#CE93D8'] },
+  default:  { name: '经典',   colors: ['#546E7A', '#4CAF50', '#E57373', '#42A5F5', '#FFB74D', '#AB47BC'] },
+  ocean:    { name: '海洋',   colors: ['#0D47A1', '#1976D2', '#42A5F5', '#0097A7', '#00ACC1', '#4DD0E1'] },
+  forest:   { name: '翠林',   colors: ['#2E7D32', '#43A047', '#66BB6A', '#558B2F', '#7CB342', '#AED581'] },
+  sunset:   { name: '日暮',   colors: ['#D84315', '#F4511E', '#FF7043', '#EC407A', '#AB47BC', '#FFB74D'] },
+  lavender: { name: '薰衣草', colors: ['#5E35B1', '#7E57C2', '#9575CD', '#AB47BC', '#CE93D8', '#B39DDB'] },
   morandi:  { name: '莫兰迪', colors: ['#8D6E63', '#A1887F', '#90A4AE', '#A5D6A7', '#CE93D8', '#FFAB91'] },
-  mono:     { name: '极简',   colors: ['#212121', '#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD'] },
-  ember:    { name: '暖阳',   colors: ['#BF360C', '#D84315', '#E64A19', '#FF6D00', '#FF8F00', '#FFA000'] },
-  nordic:   { name: '北欧',   colors: ['#37474F', '#455A64', '#546E7A', '#78909C', '#80CBC4', '#80DEEA'] },
-  candy:    { name: '糖果',   colors: ['#F06292', '#BA68C8', '#64B5F6', '#4DD0E1', '#81C784', '#FFD54F'] },
+  mono:     { name: '极简',   colors: ['#263238', '#455A64', '#607D8B', '#78909C', '#90A4AE', '#B0BEC5'] },
+  ember:    { name: '暖阳',   colors: ['#E65100', '#F57C00', '#FFA000', '#D84315', '#FF8A65', '#FFB74D'] },
+  nordic:   { name: '北欧',   colors: ['#37474F', '#546E7A', '#78909C', '#4DB6AC', '#80CBC4', '#80DEEA'] },
+  candy:    { name: '糖果',   colors: ['#EC407A', '#AB47BC', '#42A5F5', '#26C6DA', '#66BB6A', '#FFCA28'] },
+}
+
+/** Get the color array for a named palette (for ECharts) */
+export function getChartPalette(paletteName?: string): string[] {
+  if (paletteName && COLOR_PALETTES[paletteName]) return COLOR_PALETTES[paletteName].colors
+  return chartPalette
 }
 
 /** Generate N gradient colors, cycling through a named palette */

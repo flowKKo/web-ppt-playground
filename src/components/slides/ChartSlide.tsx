@@ -23,18 +23,20 @@ export interface ChartDiagramProps {
   indicators?: ChartSlideData['indicators']
   radarSeries?: ChartSlideData['radarSeries']
   chartHeight?: number
+  colorPalette?: string
 }
 
 export function ChartDiagram(props: ChartDiagramProps) {
   const h = props.chartHeight
+  const cp = props.colorPalette
 
   switch (props.chartType) {
     case 'pie':
-      return <PieChart data={props.slices ?? []} innerRadius={props.innerRadius} height={h} />
+      return <PieChart data={props.slices ?? []} innerRadius={props.innerRadius} height={h} colorPalette={cp} />
     case 'line':
-      return <LineChart categories={props.categories ?? []} series={props.lineSeries ?? []} height={h} />
+      return <LineChart categories={props.categories ?? []} series={props.lineSeries ?? []} height={h} colorPalette={cp} />
     case 'radar':
-      return <RadarChart indicators={props.indicators ?? []} series={props.radarSeries ?? []} height={h} />
+      return <RadarChart indicators={props.indicators ?? []} series={props.radarSeries ?? []} height={h} colorPalette={cp} />
     case 'bar':
     default: {
       const bars = props.bars ?? []
@@ -48,7 +50,7 @@ export function ChartDiagram(props: ChartDiagramProps) {
           color: firstMatch?.color ? colorMap[firstMatch.color] : undefined,
         }
       })
-      return <BarChart categories={categories} series={series} height={h} />
+      return <BarChart categories={categories} series={series} height={h} colorPalette={cp} />
     }
   }
 }

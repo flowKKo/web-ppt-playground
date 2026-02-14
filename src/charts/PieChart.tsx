@@ -3,7 +3,7 @@ import * as echarts from 'echarts/core'
 import { PieChart as EPieChart } from 'echarts/charts'
 import { TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors } from '../theme/swiss'
+import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
 
 echarts.use([EPieChart, TooltipComponent, LegendComponent, CanvasRenderer])
 echarts.registerTheme('swiss', echartsTheme)
@@ -12,9 +12,11 @@ interface PieChartProps {
   data: { name: string; value: number }[]
   innerRadius?: number
   height?: number
+  colorPalette?: string
 }
 
-export default function PieChart({ data, innerRadius = 0, height }: PieChartProps) {
+export default function PieChart({ data, innerRadius = 0, height, colorPalette }: PieChartProps) {
+  const pal = colorPalette ? getChartPalette(colorPalette) : undefined
   const isDonut = innerRadius > 0
   const total = data.reduce((s, d) => s + d.value, 0)
 
@@ -33,7 +35,7 @@ export default function PieChart({ data, innerRadius = 0, height }: PieChartProp
         type: 'pie' as const,
         radius: isDonut ? [`${innerRadius}%`, '72%'] : ['0%', '72%'],
         center: ['50%', '46%'],
-        data,
+        data: pal ? data.map((d, i) => ({ ...d, itemStyle: { color: pal[i % pal.length] } })) : data,
         label: {
           show: true,
           fontSize: 12,

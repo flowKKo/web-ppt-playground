@@ -3,7 +3,7 @@ import * as echarts from 'echarts/core'
 import { RadarChart as ERadarChart } from 'echarts/charts'
 import { TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, chartPalette } from '../theme/swiss'
+import { echartsTheme, colors, chartPalette, getChartPalette } from '../theme/swiss'
 
 echarts.use([ERadarChart, TooltipComponent, LegendComponent, CanvasRenderer])
 echarts.registerTheme('swiss', echartsTheme)
@@ -12,9 +12,11 @@ interface RadarChartProps {
   indicators: { name: string; max: number }[]
   series: { name: string; values: number[] }[]
   height?: number
+  colorPalette?: string
 }
 
-export default function RadarChart({ indicators, series, height }: RadarChartProps) {
+export default function RadarChart({ indicators, series, height, colorPalette }: RadarChartProps) {
+  const pal = getChartPalette(colorPalette)
   const hasLegend = series.length > 1
 
   const option = {
@@ -47,7 +49,7 @@ export default function RadarChart({ indicators, series, height }: RadarChartPro
     series: [{
       type: 'radar' as const,
       data: series.map((s, i) => {
-        const color = chartPalette[i % chartPalette.length]
+        const color = pal[i % pal.length]
         return {
           name: s.name,
           value: s.values,

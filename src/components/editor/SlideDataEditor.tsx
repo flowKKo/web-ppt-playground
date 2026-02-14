@@ -122,34 +122,36 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 const paletteKeys = Object.keys(COLOR_PALETTES)
 
+function PaletteColorDots({ colors: pal }: { colors: string[] }) {
+  return (
+    <div className="flex gap-0.5">
+      {pal.map((c, i) => (
+        <div key={i} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
+      ))}
+    </div>
+  )
+}
+
 function PalettePicker({ value, onChange }: { value?: string; onChange: (v: string | undefined) => void }) {
   const current = value || 'default'
+  const currentPalette = COLOR_PALETTES[current] || COLOR_PALETTES.default
+
   return (
-    <div className="flex flex-col gap-1.5">
-      {paletteKeys.map((key) => {
-        const p = COLOR_PALETTES[key]
-        const active = current === key
-        return (
-          <button
-            key={key}
-            type="button"
-            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors"
-            style={{
-              border: active ? '2px solid #3B82F6' : '2px solid transparent',
-              background: active ? '#EFF6FF' : 'transparent',
-            }}
-            onClick={() => onChange(key === 'default' ? undefined : key)}
-          >
-            <div className="flex gap-0.5">
-              {p.colors.map((c, i) => (
-                <div key={i} className="w-4 h-4 rounded-full" style={{ backgroundColor: c }} />
-              ))}
-            </div>
-            <span className="text-[11px] text-gray-600 font-medium">{p.name}</span>
-          </button>
-        )
-      })}
-    </div>
+    <label className="block">
+      <div className="flex items-center gap-2 mb-1.5">
+        <PaletteColorDots colors={currentPalette.colors} />
+        <span className="text-[11px] text-gray-500 font-medium">{currentPalette.name}</span>
+      </div>
+      <select
+        value={current}
+        onChange={(e) => onChange(e.target.value === 'default' ? undefined : e.target.value)}
+        className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-md focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none transition-colors"
+      >
+        {paletteKeys.map((key) => (
+          <option key={key} value={key}>{COLOR_PALETTES[key].name}</option>
+        ))}
+      </select>
+    </label>
   )
 }
 
