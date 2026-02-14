@@ -1,0 +1,864 @@
+{
+  "id": "engine-demo",
+  "title": "引擎演示",
+  "description": "全部 10 种 slide 类型 × 各 variant 展示",
+  "date": "2026-02",
+  "slides": [
+    {
+      "type": "title",
+      "title": "Slide Engine 演示",
+      "subtitle": "10 种类型 · 7 大引擎 · 完整 Variant 巡礼",
+      "badge": "v2.0"
+    },
+    {
+      "type": "key-point",
+      "title": "引擎 + 皮肤 分离架构",
+      "subtitle": "39 种 Diagram → 7 个引擎组件",
+      "body": "每个引擎支持多种 variant，通过数据驱动渲染不同的视觉表现形式"
+    },
+    {
+      "type": "chart",
+      "chartType": "bar",
+      "title": "季度营收对比",
+      "body": "各产品线收入趋势",
+      "highlight": "¥12.8M",
+      "bars": [
+        {
+          "category": "Q1",
+          "values": [
+            {
+              "name": "SaaS",
+              "value": 280,
+              "color": "positive"
+            },
+            {
+              "name": "咨询",
+              "value": 120
+            }
+          ]
+        },
+        {
+          "category": "Q2",
+          "values": [
+            {
+              "name": "SaaS",
+              "value": 340,
+              "color": "positive"
+            },
+            {
+              "name": "咨询",
+              "value": 150
+            }
+          ]
+        },
+        {
+          "category": "Q3",
+          "values": [
+            {
+              "name": "SaaS",
+              "value": 410,
+              "color": "positive"
+            },
+            {
+              "name": "咨询",
+              "value": 130
+            }
+          ]
+        },
+        {
+          "category": "Q4",
+          "values": [
+            {
+              "name": "SaaS",
+              "value": 520,
+              "color": "positive"
+            },
+            {
+              "name": "咨询",
+              "value": 180
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "chart",
+      "chartType": "pie",
+      "title": "市场份额分布",
+      "body": "2025年各品牌占比",
+      "slices": [
+        {
+          "name": "Alpha",
+          "value": 35
+        },
+        {
+          "name": "Beta",
+          "value": 25
+        },
+        {
+          "name": "Gamma",
+          "value": 20
+        },
+        {
+          "name": "其他",
+          "value": 20
+        }
+      ],
+      "innerRadius": 40
+    },
+    {
+      "type": "chart",
+      "chartType": "line",
+      "title": "月活用户增长曲线",
+      "body": "移动端 vs 桌面端",
+      "categories": [
+        "1月",
+        "2月",
+        "3月",
+        "4月",
+        "5月",
+        "6月"
+      ],
+      "lineSeries": [
+        {
+          "name": "移动端",
+          "data": [
+            120,
+            180,
+            250,
+            310,
+            420,
+            530
+          ],
+          "area": true
+        },
+        {
+          "name": "桌面端",
+          "data": [
+            200,
+            210,
+            230,
+            240,
+            260,
+            280
+          ]
+        }
+      ]
+    },
+    {
+      "type": "chart",
+      "chartType": "radar",
+      "title": "产品能力雷达图",
+      "body": "A方案 vs B方案 多维评估",
+      "chartHeight": 360,
+      "indicators": [
+        {
+          "name": "性能",
+          "max": 100
+        },
+        {
+          "name": "安全",
+          "max": 100
+        },
+        {
+          "name": "易用性",
+          "max": 100
+        },
+        {
+          "name": "可扩展",
+          "max": 100
+        },
+        {
+          "name": "成本",
+          "max": 100
+        }
+      ],
+      "radarSeries": [
+        {
+          "name": "A方案",
+          "values": [
+            85,
+            90,
+            70,
+            80,
+            60
+          ]
+        },
+        {
+          "name": "B方案",
+          "values": [
+            70,
+            65,
+            90,
+            75,
+            85
+          ]
+        }
+      ]
+    },
+    {
+      "type": "grid-item",
+      "title": "GridItem · solid",
+      "body": "实心卡片样式，白底 + 阴影",
+      "variant": "solid",
+      "items": [
+        {
+          "title": "日活跃用户",
+          "value": "12.5万",
+          "valueColor": "positive",
+          "description": "环比增长 23%"
+        },
+        {
+          "title": "转化率",
+          "value": "4.8%",
+          "valueColor": "neutral",
+          "description": "略高于行业均值"
+        },
+        {
+          "title": "客单价",
+          "value": "¥328",
+          "valueColor": "positive",
+          "description": "同比增长 15%"
+        },
+        {
+          "title": "流失率",
+          "value": "2.1%",
+          "valueColor": "negative",
+          "description": "需关注老客留存"
+        }
+      ]
+    },
+    {
+      "type": "grid-item",
+      "title": "GridItem · outline",
+      "body": "描边卡片样式",
+      "variant": "outline",
+      "items": [
+        {
+          "title": "前端开发",
+          "description": "React / Vue / TypeScript"
+        },
+        {
+          "title": "后端服务",
+          "description": "Node.js / Go / Rust"
+        },
+        {
+          "title": "基础设施",
+          "description": "Kubernetes / Docker / Terraform"
+        },
+        {
+          "title": "数据工程",
+          "description": "Spark / Flink / dbt"
+        },
+        {
+          "title": "AI/ML",
+          "description": "PyTorch / LangChain / RAG"
+        },
+        {
+          "title": "安全合规",
+          "description": "SOC2 / GDPR / 渗透测试"
+        }
+      ]
+    },
+    {
+      "type": "grid-item",
+      "title": "GridItem · sideline",
+      "body": "左侧色条强调",
+      "variant": "sideline",
+      "items": [
+        {
+          "title": "需求分析",
+          "description": "与产品经理对齐目标"
+        },
+        {
+          "title": "技术选型",
+          "description": "评估方案可行性"
+        },
+        {
+          "title": "迭代开发",
+          "description": "两周一个 Sprint"
+        }
+      ]
+    },
+    {
+      "type": "grid-item",
+      "title": "GridItem · topline",
+      "body": "顶部色条强调",
+      "variant": "topline",
+      "items": [
+        {
+          "title": "稳定性",
+          "value": "99.99%",
+          "valueColor": "positive"
+        },
+        {
+          "title": "响应时间",
+          "value": "<50ms",
+          "valueColor": "positive"
+        },
+        {
+          "title": "并发承载",
+          "value": "10万 QPS",
+          "valueColor": "neutral"
+        },
+        {
+          "title": "故障恢复",
+          "value": "<30s",
+          "valueColor": "positive"
+        }
+      ]
+    },
+    {
+      "type": "grid-item",
+      "title": "GridItem · top-circle",
+      "body": "带编号圆形图标",
+      "variant": "top-circle",
+      "items": [
+        {
+          "title": "调研",
+          "description": "用户访谈 + 竞品分析"
+        },
+        {
+          "title": "设计",
+          "description": "原型 + 交互 + 视觉"
+        },
+        {
+          "title": "开发",
+          "description": "前后端 + 联调"
+        },
+        {
+          "title": "上线",
+          "description": "灰度 + 全量发布"
+        }
+      ]
+    },
+    {
+      "type": "sequence",
+      "title": "Sequence · timeline",
+      "body": "带编号圆点的时间线",
+      "variant": "timeline",
+      "steps": [
+        {
+          "label": "立项",
+          "description": "2025 Q1"
+        },
+        {
+          "label": "Alpha",
+          "description": "2025 Q2"
+        },
+        {
+          "label": "Beta",
+          "description": "2025 Q3"
+        },
+        {
+          "label": "GA",
+          "description": "2025 Q4"
+        }
+      ]
+    },
+    {
+      "type": "sequence",
+      "title": "Sequence · chain",
+      "body": "链式卡片，左侧色条",
+      "variant": "chain",
+      "steps": [
+        {
+          "label": "数据采集",
+          "description": "SDK 埋点"
+        },
+        {
+          "label": "清洗转换",
+          "description": "ETL Pipeline"
+        },
+        {
+          "label": "建模分析",
+          "description": "特征工程"
+        },
+        {
+          "label": "可视化",
+          "description": "仪表盘"
+        }
+      ]
+    },
+    {
+      "type": "sequence",
+      "title": "Sequence · arrows",
+      "body": "填色箭头步骤",
+      "variant": "arrows",
+      "steps": [
+        {
+          "label": "输入"
+        },
+        {
+          "label": "处理"
+        },
+        {
+          "label": "存储"
+        },
+        {
+          "label": "输出"
+        }
+      ]
+    },
+    {
+      "type": "sequence",
+      "title": "Sequence · pills",
+      "body": "胶囊样式节点",
+      "variant": "pills",
+      "steps": [
+        {
+          "label": "Plan",
+          "description": "制定计划"
+        },
+        {
+          "label": "Do",
+          "description": "执行实施"
+        },
+        {
+          "label": "Check",
+          "description": "检查效果"
+        },
+        {
+          "label": "Act",
+          "description": "改进优化"
+        }
+      ]
+    },
+    {
+      "type": "sequence",
+      "title": "Sequence · ribbon-arrows",
+      "body": "丝带箭头流程",
+      "variant": "ribbon-arrows",
+      "steps": [
+        {
+          "label": "需求",
+          "description": "PRD"
+        },
+        {
+          "label": "设计",
+          "description": "UI/UX"
+        },
+        {
+          "label": "开发",
+          "description": "Sprint"
+        },
+        {
+          "label": "测试",
+          "description": "QA"
+        },
+        {
+          "label": "发布",
+          "description": "CD"
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "title": "Compare · versus",
+      "body": "左右双栏对比",
+      "mode": "versus",
+      "sides": [
+        {
+          "name": "单体架构",
+          "items": [
+            {
+              "label": "部署复杂度",
+              "value": "低"
+            },
+            {
+              "label": "可扩展性",
+              "value": "有限"
+            },
+            {
+              "label": "团队协作",
+              "value": "简单"
+            },
+            {
+              "label": "故障隔离",
+              "value": "差"
+            }
+          ]
+        },
+        {
+          "name": "微服务架构",
+          "items": [
+            {
+              "label": "部署复杂度",
+              "value": "高"
+            },
+            {
+              "label": "可扩展性",
+              "value": "优秀"
+            },
+            {
+              "label": "团队协作",
+              "value": "独立"
+            },
+            {
+              "label": "故障隔离",
+              "value": "好"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "title": "Compare · quadrant",
+      "body": "四象限散点定位",
+      "mode": "quadrant",
+      "xAxis": "实施难度 →",
+      "yAxis": "业务价值 ↑",
+      "quadrantItems": [
+        {
+          "label": "功能A",
+          "x": 20,
+          "y": 80
+        },
+        {
+          "label": "功能B",
+          "x": 70,
+          "y": 85
+        },
+        {
+          "label": "功能C",
+          "x": 30,
+          "y": 40
+        },
+        {
+          "label": "功能D",
+          "x": 80,
+          "y": 30
+        },
+        {
+          "label": "功能E",
+          "x": 50,
+          "y": 60
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "title": "Compare · iceberg",
+      "body": "冰山模型：显性 vs 隐性",
+      "mode": "iceberg",
+      "visible": [
+        {
+          "label": "UI 界面",
+          "description": "用户直接交互的部分"
+        },
+        {
+          "label": "API 文档",
+          "description": "对外暴露的接口"
+        }
+      ],
+      "hidden": [
+        {
+          "label": "数据库设计",
+          "description": "表结构、索引策略"
+        },
+        {
+          "label": "缓存层",
+          "description": "Redis / CDN"
+        },
+        {
+          "label": "监控告警",
+          "description": "Prometheus + Grafana"
+        },
+        {
+          "label": "安全防护",
+          "description": "WAF / DDoS / 审计日志"
+        }
+      ]
+    },
+    {
+      "type": "funnel",
+      "title": "Funnel · funnel",
+      "body": "上宽下窄，经典漏斗",
+      "variant": "funnel",
+      "layers": [
+        {
+          "label": "访问",
+          "value": 10000,
+          "description": "全渠道流量"
+        },
+        {
+          "label": "注册",
+          "value": 3500,
+          "description": "转化 35%"
+        },
+        {
+          "label": "激活",
+          "value": 1800,
+          "description": "转化 51%"
+        },
+        {
+          "label": "付费",
+          "value": 600,
+          "description": "转化 33%"
+        },
+        {
+          "label": "续费",
+          "value": 420,
+          "description": "续费率 70%"
+        }
+      ]
+    },
+    {
+      "type": "funnel",
+      "title": "Funnel · pyramid",
+      "body": "上窄下宽，金字塔模型",
+      "variant": "pyramid",
+      "layers": [
+        {
+          "label": "战略层",
+          "description": "愿景与目标"
+        },
+        {
+          "label": "战术层",
+          "description": "路线图与里程碑"
+        },
+        {
+          "label": "执行层",
+          "description": "日常任务与交付"
+        },
+        {
+          "label": "基础层",
+          "description": "团队与文化"
+        }
+      ]
+    },
+    {
+      "type": "funnel",
+      "title": "Funnel · slope",
+      "body": "对角递进坡度",
+      "variant": "slope",
+      "layers": [
+        {
+          "label": "MVP",
+          "description": "核心功能"
+        },
+        {
+          "label": "v1.0",
+          "description": "完整产品"
+        },
+        {
+          "label": "v2.0",
+          "description": "生态平台"
+        }
+      ]
+    },
+    {
+      "type": "concentric",
+      "title": "Concentric · circles",
+      "body": "同心圆层次模型",
+      "variant": "circles",
+      "rings": [
+        {
+          "label": "核心",
+          "description": "用户价值"
+        },
+        {
+          "label": "产品",
+          "description": "功能与体验"
+        },
+        {
+          "label": "技术",
+          "description": "架构与实现"
+        },
+        {
+          "label": "运营",
+          "description": "增长与服务"
+        }
+      ]
+    },
+    {
+      "type": "concentric",
+      "title": "Concentric · diamond",
+      "body": "嵌套菱形层次",
+      "variant": "diamond",
+      "rings": [
+        {
+          "label": "Why",
+          "description": "使命"
+        },
+        {
+          "label": "How",
+          "description": "策略"
+        },
+        {
+          "label": "What",
+          "description": "产品"
+        }
+      ]
+    },
+    {
+      "type": "concentric",
+      "title": "Concentric · target",
+      "body": "靶心着色模型",
+      "variant": "target",
+      "rings": [
+        {
+          "label": "核心用户",
+          "description": "1万人"
+        },
+        {
+          "label": "活跃用户",
+          "description": "10万人"
+        },
+        {
+          "label": "注册用户",
+          "description": "100万人"
+        },
+        {
+          "label": "潜在用户",
+          "description": "1000万人"
+        }
+      ]
+    },
+    {
+      "type": "hub-spoke",
+      "title": "HubSpoke · orbit",
+      "body": "轨道环绕模型",
+      "variant": "orbit",
+      "center": {
+        "label": "平台",
+        "description": "Core API"
+      },
+      "spokes": [
+        {
+          "label": "Web",
+          "description": "React"
+        },
+        {
+          "label": "Mobile",
+          "description": "RN"
+        },
+        {
+          "label": "Desktop",
+          "description": "Electron"
+        },
+        {
+          "label": "CLI",
+          "description": "Node"
+        },
+        {
+          "label": "SDK",
+          "description": "TS/Py"
+        }
+      ]
+    },
+    {
+      "type": "hub-spoke",
+      "title": "HubSpoke · solar",
+      "body": "太阳系辐射模型",
+      "variant": "solar",
+      "center": {
+        "label": "AI Core"
+      },
+      "spokes": [
+        {
+          "label": "NLP"
+        },
+        {
+          "label": "Vision"
+        },
+        {
+          "label": "Audio"
+        },
+        {
+          "label": "Search"
+        },
+        {
+          "label": "Agent"
+        },
+        {
+          "label": "Safety"
+        }
+      ]
+    },
+    {
+      "type": "hub-spoke",
+      "title": "HubSpoke · pinwheel",
+      "body": "风车曲线连接模型",
+      "variant": "pinwheel",
+      "center": {
+        "label": "用户"
+      },
+      "spokes": [
+        {
+          "label": "发现",
+          "description": "搜索推荐"
+        },
+        {
+          "label": "体验",
+          "description": "交互使用"
+        },
+        {
+          "label": "分享",
+          "description": "社交传播"
+        },
+        {
+          "label": "回访",
+          "description": "留存召回"
+        }
+      ]
+    },
+    {
+      "type": "venn",
+      "title": "Venn · classic",
+      "body": "经典韦恩图",
+      "variant": "classic",
+      "sets": [
+        {
+          "label": "技术",
+          "description": "可实现性"
+        },
+        {
+          "label": "商业",
+          "description": "盈利能力"
+        },
+        {
+          "label": "用户",
+          "description": "需求痛点"
+        }
+      ],
+      "intersectionLabel": "最佳产品"
+    },
+    {
+      "type": "venn",
+      "title": "Venn · linear",
+      "body": "线性排列韦恩图",
+      "variant": "linear",
+      "sets": [
+        {
+          "label": "前端"
+        },
+        {
+          "label": "后端"
+        },
+        {
+          "label": "DevOps"
+        }
+      ],
+      "intersectionLabel": "全栈"
+    },
+    {
+      "type": "venn",
+      "title": "Venn · linear-filled",
+      "body": "线性填充韦恩图",
+      "variant": "linear-filled",
+      "sets": [
+        {
+          "label": "设计",
+          "description": "UX/UI"
+        },
+        {
+          "label": "工程",
+          "description": "Code"
+        }
+      ],
+      "intersectionLabel": "设计工程"
+    }
+  ]
+}

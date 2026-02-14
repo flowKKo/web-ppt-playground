@@ -97,7 +97,7 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImpo
             <motion.a
               key={deck.id}
               href={`#${deck.id}`}
-              className="group/card relative rounded-[14px] px-8 py-6 flex flex-col gap-4 no-underline transition-shadow hover:shadow-lg"
+              className="group/card relative rounded-[14px] px-8 py-6 flex flex-col gap-4 no-underline transition-shadow hover:shadow-lg h-[180px]"
               style={cardStyle}
               variants={motionConfig.child}
             >
@@ -126,7 +126,7 @@ export default function DeckSelector({ decks, onCreateDeck, onDeleteDeck, onImpo
                 </h2>
                 {deck.description && (
                   <p
-                    className="text-base leading-relaxed"
+                    className="text-base leading-relaxed line-clamp-2"
                     style={{ color: colors.textSecondary }}
                   >
                     {deck.description}

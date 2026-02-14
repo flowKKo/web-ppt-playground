@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import SlideDeck from './components/SlideDeck'
 import DeckSelector from './components/DeckSelector'
-import { decks } from './data/decks'
+import { decks, deckList } from './data/decks'
 import { importDeckFromFile } from './data/deck-io'
 import { saveDeck, deleteDeckFile } from './data/deck-api'
 import type { DeckMeta, SlideData } from './data/types'
@@ -51,7 +51,15 @@ export default function App() {
     }
   }, [pendingDeck])
 
-  const allDeckList = useMemo(() => Object.values(allDecks), [allDecks])
+  const allDeckList = useMemo(() => {
+    // Start with sorted list, replace with pending if applicable
+    const list = deckList.map((d) => allDecks[d.id] ?? d)
+    // Append pending deck if it's new (not in deckList yet)
+    if (pendingDeck && !deckList.some((d) => d.id === pendingDeck.id)) {
+      list.push(pendingDeck)
+    }
+    return list
+  }, [allDecks, pendingDeck])
 
   const onHashChange = useCallback(() => {
     setDeckId(getHashDeckId())
