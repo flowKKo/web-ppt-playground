@@ -7,7 +7,7 @@ import EditableText from '../editor/EditableText'
 
 function TimelineStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex flex-col items-center justify-center text-center flex-1 min-w-0">
+    <motion.div variants={motionConfig.child} className="flex flex-col items-center text-center flex-1 min-w-0">
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold mb-2" style={{ backgroundColor: color }}>
         {index + 1}
       </div>
@@ -19,7 +19,7 @@ function TimelineStep({ label, description, index, color }: { label: string; des
 
 function ChainStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 rounded-lg p-4 flex flex-col justify-center" style={{ borderLeft: `4px solid ${color}`, background: colors.card }}>
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 rounded-lg p-4" style={{ borderLeft: `4px solid ${color}`, background: colors.card }}>
       <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-semibold" style={{ color: colors.textPrimary }} />
       {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1" style={{ color: colors.textSecondary }} />}
     </motion.div>
@@ -28,7 +28,7 @@ function ChainStep({ label, description, index, color }: { label: string; descri
 
 function ArrowStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 rounded-lg p-4 text-center flex flex-col justify-center" style={{ background: color }}>
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 rounded-lg p-4 text-center" style={{ background: color }}>
       <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold text-white" />
       {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1 text-white/80" />}
     </motion.div>
@@ -37,7 +37,7 @@ function ArrowStep({ label, description, index, color }: { label: string; descri
 
 function PillStep({ label, description, index, color }: { label: string; description?: string; index: number; color: string }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 flex flex-col items-center justify-center text-center">
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 flex flex-col items-center text-center">
       <EditableText value={label} field={`steps.${index}.label`} as="div" className="rounded-full px-5 py-2 text-sm font-semibold text-white" style={{ backgroundColor: color }} />
       {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-2" style={{ color: colors.textSecondary }} />}
     </motion.div>
@@ -46,7 +46,7 @@ function PillStep({ label, description, index, color }: { label: string; descrip
 
 function RibbonStep({ label, description, index, color, isLast }: { label: string; description?: string; index: number; color: string; isLast: boolean }) {
   return (
-    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative flex flex-col justify-center">
+    <motion.div variants={motionConfig.child} className="flex-1 min-w-0 relative">
       <div className="p-4 text-center" style={{ backgroundColor: color, clipPath: isLast ? undefined : 'polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)' }}>
         <EditableText value={label} field={`steps.${index}.label`} as="div" className="text-sm font-bold text-white" />
         {description && <EditableText value={description} field={`steps.${index}.description`} as="div" className="text-xs mt-1 text-white/80" />}
@@ -55,7 +55,7 @@ function RibbonStep({ label, description, index, color, isLast }: { label: strin
   )
 }
 
-export function SequenceDiagram({ steps, variant, direction = 'horizontal' }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical' }) {
+export function SequenceDiagram({ steps, variant, direction = 'horizontal', gap = 8 }: { steps: SequenceSlideData['steps']; variant: SequenceSlideData['variant']; direction?: 'horizontal' | 'vertical'; gap?: number }) {
   const isH = direction === 'horizontal'
   const palette = generateGradientColors(steps.length)
 
@@ -108,23 +108,23 @@ export function SequenceDiagram({ steps, variant, direction = 'horizontal' }: { 
   }
 
   return (
-    <div className={`flex ${isH ? 'flex-row' : 'flex-col'} items-center gap-2 flex-1 min-h-0`}>
+    <div className={`flex ${isH ? 'flex-row' : 'flex-col'} items-center`} style={{ gap: `${gap}px` }}>
       {stepsWithConnectors()}
     </div>
   )
 }
 
-export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal' }: SequenceSlideData) {
+export default function SequenceEngine({ title, body, steps, variant, direction = 'horizontal', gap }: SequenceSlideData) {
   return (
     <motion.div
-      className="flex flex-col gap-6 h-full"
+      className="flex flex-col gap-6 h-full justify-center"
       variants={motionConfig.stagger}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
     >
       <EngineTitle title={title} body={body} />
-      <SequenceDiagram steps={steps} variant={variant} direction={direction} />
+      <SequenceDiagram steps={steps} variant={variant} direction={direction} gap={gap} />
     </motion.div>
   )
 }
