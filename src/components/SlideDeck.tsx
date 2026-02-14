@@ -18,24 +18,29 @@ interface SlideDeckProps {
   deckId: string
   deckTitle?: string
   deckDescription?: string
-  onUpdateDeckMeta?: (title: string, description: string) => void
 }
 
-export default function SlideDeck({ slides, onBack, deckId, deckTitle, deckDescription, onUpdateDeckMeta }: SlideDeckProps) {
+export default function SlideDeck({ slides, onBack, deckId, deckTitle, deckDescription }: SlideDeckProps) {
   return (
-    <EditorProvider deckId={deckId} originalSlides={slides}>
-      <SlideDeckInner slides={slides} onBack={onBack} deckTitle={deckTitle} deckDescription={deckDescription} onUpdateDeckMeta={onUpdateDeckMeta} />
+    <EditorProvider deckId={deckId} originalSlides={slides} deckTitle={deckTitle} deckDescription={deckDescription}>
+      <SlideDeckInner slides={slides} onBack={onBack} />
     </EditorProvider>
   )
 }
 
-function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDeckMeta }: Omit<SlideDeckProps, 'deckId'>) {
+function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'deckTitle' | 'deckDescription'>) {
   const mainRef = useRef<HTMLDivElement>(null)
   const {
     editMode, toggleEditMode, getEffectiveSlideData, setSelection,
     allSlides, insertSlide, deleteSlide, copySlide, pasteSlide, duplicateSlide, moveSlide, clipboard,
     setPendingTemplate, pendingTemplateSlideIndex,
+    deckTitle, deckDescription, setDeckTitle, setDeckDescription,
   } = useEditor()
+
+  const handleUpdateDeckMeta = useCallback((title: string, description: string) => {
+    setDeckTitle(title)
+    setDeckDescription(description)
+  }, [setDeckTitle, setDeckDescription])
 
   const [spotlight, setSpotlight] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -231,7 +236,7 @@ function SlideDeckInner({ slides, onBack, deckTitle, deckDescription, onUpdateDe
         onResize={setSidebarWidth}
         deckTitle={deckTitle}
         deckDescription={deckDescription}
-        onUpdateDeckMeta={onUpdateDeckMeta}
+        onUpdateDeckMeta={handleUpdateDeckMeta}
       />
 
       {/* Main content — single page view */}

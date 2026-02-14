@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo, type ReactNode } from 'react'
-import type { SlideData, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo, useState, type ReactNode } from 'react'
+import type { SlideData, DeckMeta, BlockSlideData, ContentBlock, BlockData } from '../../data/types'
+import { saveDeck } from '../../data/deck-api'
 import type {
   DeckEditorState,
   SlideEditorState,
@@ -56,6 +57,7 @@ type EditorAction =
   | { type: 'SET_PENDING_TEMPLATE'; slideIndex: number | null }
   | { type: 'MOVE_SLIDE'; fromIndex: number; toIndex: number }
   | { type: 'LOAD_STATE'; state: DeckEditorState }
+  | { type: 'COMMIT_SAVE'; mergedSlides: SlideData[] }
   | { type: 'UNDO' }
   | { type: 'REDO' }
 
@@ -418,6 +420,18 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'LOAD_STATE':
       return { ...state, deckState: action.state }
 
+    case 'COMMIT_SAVE': {
+      // Reset editor state: merged slides become the new originals
+      const newList: SlideEntry[] = action.mergedSlides.map((_, i) => ({ kind: 'original' as const, index: i }))
+      return {
+        ...state,
+        originalSlides: action.mergedSlides,
+        deckState: { version: 1, slides: {}, slideList: newList },
+        history: [],
+        historyIndex: -1,
+      }
+    }
+
     // ─── Undo / Redo ───
     case 'UNDO': {
       if (state.historyIndex < 0) return state
@@ -462,6 +476,10 @@ interface EditorContextValue {
   activeTool: ActiveTool
   selection: SelectionTarget
   activeColor: string
+  deckTitle: string
+  deckDescription: string
+  setDeckTitle: (title: string) => void
+  setDeckDescription: (desc: string) => void
   toggleEditMode: () => void
   setTool: (tool: ActiveTool) => void
   setSelection: (target: SelectionTarget) => void
@@ -514,30 +532,28 @@ export function useEditor(): EditorContextValue {
 
 // ─── Provider ───
 
-function loadFromStorage(deckId: string): DeckEditorState {
-  try {
-    const raw = localStorage.getItem(`editor-${deckId}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (parsed?.version === 1) return parsed
-    }
-  } catch { /* ignore */ }
-  return createDefaultDeckEditorState()
-}
-
 interface EditorProviderProps {
   deckId: string
   originalSlides: SlideData[]
+  deckTitle?: string
+  deckDescription?: string
   children: ReactNode
 }
 
-export function EditorProvider({ deckId, originalSlides, children }: EditorProviderProps) {
-  const [state, dispatch] = useReducer(editorReducer, { deckId, originalSlides }, ({ deckId: id, originalSlides: slides }) => ({
+export function EditorProvider({ deckId, originalSlides, deckTitle: initialTitle, deckDescription: initialDesc, children }: EditorProviderProps) {
+  const [localTitle, setLocalTitle] = useState(initialTitle || '')
+  const [localDescription, setLocalDescription] = useState(initialDesc || '')
+
+  // Sync from props when external data changes (e.g. HMR)
+  useEffect(() => { setLocalTitle(initialTitle || '') }, [initialTitle])
+  useEffect(() => { setLocalDescription(initialDesc || '') }, [initialDesc])
+
+  const [state, dispatch] = useReducer(editorReducer, { originalSlides }, ({ originalSlides: slides }) => ({
     editMode: true,
     activeTool: 'select' as ActiveTool,
     selection: null,
     activeColor: '#000000',
-    deckState: loadFromStorage(id),
+    deckState: createDefaultDeckEditorState(),
     history: [] as DeckEditorState[],
     historyIndex: -1,
     clipboard: null as SlideData | null,
@@ -545,20 +561,76 @@ export function EditorProvider({ deckId, originalSlides, children }: EditorProvi
     pendingTemplateSlideIndex: null,
   }))
 
-  // Keep originalSlides in sync when prop changes
+  // Keep originalSlides in sync when prop changes (HMR)
   useEffect(() => {
     dispatch({ type: 'SET_ORIGINAL_SLIDES', slides: originalSlides })
   }, [originalSlides])
 
-  // Persist to localStorage with debounce
+  // ─── Auto-save: deckState changes → 2s debounce → commitSave ───
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const isCommitting = useRef(false)
+  const deckStateRef = useRef(state.deckState)
+  deckStateRef.current = state.deckState
+
+  const titleRef = useRef(localTitle)
+  titleRef.current = localTitle
+  const descRef = useRef(localDescription)
+  descRef.current = localDescription
+  const originalSlidesRef = useRef(state.originalSlides)
+  originalSlidesRef.current = state.originalSlides
+
+  const commitSave = useCallback(async () => {
+    const currentDeckState = deckStateRef.current
+    const curOriginalSlides = originalSlidesRef.current
+    // Build merged slides
+    const entries = materializeSlideList(currentDeckState, curOriginalSlides.length)
+    const mergedSlides = entries.map((e, i) => {
+      const original = e.kind === 'original' ? curOriginalSlides[e.index] : e.data
+      return currentDeckState.slides[i]?.slideDataOverride ?? original
+    })
+
+    const now = new Date()
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const deckMeta: DeckMeta = {
+      id: deckId,
+      title: titleRef.current || '未命名',
+      description: descRef.current || undefined,
+      date,
+      slides: mergedSlides,
+    }
+
+    try {
+      await saveDeck(deckMeta)
+    } catch {
+      return // file write failed, skip commit
+    }
+
+    // Only dispatch COMMIT_SAVE if deckState hasn't changed during the await
+    if (deckStateRef.current === currentDeckState) {
+      isCommitting.current = true
+      dispatch({ type: 'COMMIT_SAVE', mergedSlides })
+    }
+  }, [deckId])
+
   useEffect(() => {
+    // Skip the deckState change caused by COMMIT_SAVE itself
+    if (isCommitting.current) {
+      isCommitting.current = false
+      return
+    }
     clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      localStorage.setItem(`editor-${deckId}`, JSON.stringify(state.deckState))
-    }, 300)
+    saveTimer.current = setTimeout(() => { commitSave() }, 2000)
     return () => clearTimeout(saveTimer.current)
-  }, [state.deckState, deckId])
+  }, [state.deckState, localTitle, localDescription, commitSave])
+
+  // Flush on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(saveTimer.current)
+      commitSave()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z, Delete/Backspace
   useEffect(() => {
@@ -790,6 +862,10 @@ export function EditorProvider({ deckId, originalSlides, children }: EditorProvi
     activeTool: state.activeTool,
     selection: state.selection,
     activeColor: state.activeColor,
+    deckTitle: localTitle,
+    deckDescription: localDescription,
+    setDeckTitle: setLocalTitle,
+    setDeckDescription: setLocalDescription,
     toggleEditMode,
     setTool,
     setSelection,
