@@ -337,7 +337,7 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 }
 ```
 
-**9 block data types** (same engines as standalone slides, but without title/body wrappers):
+**10 block data types** (same engines as standalone slides, but without title/body wrappers):
 
 | Block `type` | Fields (same as standalone minus `title`/`body`) |
 |-------------|------------------------------------------------|
@@ -350,6 +350,7 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `hub-spoke` | `{ center, spokes, variant }` |
 | `venn` | `{ sets, intersectionLabel?, variant }` |
 | `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, highlight? }` |
+| `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
 **Common block layout patterns:**
 
@@ -369,11 +370,22 @@ Dashboard (2×2):
   bottom-right:{ x: 51, y: 52, width: 47, height: 46 }
 ```
 
+**Image block** — placeholder for screenshots, photos, or illustrations:
+
+```ts
+{ type: 'image', placeholder: '产品界面截图', alt: '产品截图' }
+```
+
+- When generating slides, **always omit `src`** (leave as placeholder mode). Users upload actual images later.
+- Use `placeholder` to describe what image should go there (e.g., "架构图", "产品截图", "团队合影")
+- Image blocks can fill empty space when content is insufficient for a full diagram
+
 **When to use block-slide:**
 - Combining a text explanation with a diagram side by side
 - Dashboard-style slides with multiple small charts/diagrams
 - Complex layouts that don't fit a single slide type
 - When you need a title + body PLUS a diagram on the same slide
+- When content is sparse: combine diagram + image placeholder to fill the slide
 
 ---
 
@@ -430,6 +442,7 @@ Slide 7: "用户转化路径"
 | Layered architecture | `concentric` (circles) | Nested layers, inside-out |
 | Concept overlap | `venn` (classic) | Shared and unique traits |
 | Mixed content | `block-slide` | Text + diagram on same slide |
+| Visual placeholder | `block-slide` + `image` block | Space for screenshots, photos, illustrations |
 
 ### Phase 3: Implement — Generate Typed Data
 
@@ -616,6 +629,8 @@ interface LineSeries { name: string; data: number[]; area?: boolean }
 interface RadarIndicator { name: string; max: number }
 interface RadarSeries { name: string; values: number[] }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
+// BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart, image
+// Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 // ─── Variant Unions ───
 type GridItemVariant = 'solid' | 'outline' | 'sideline' | 'topline' | 'top-circle' | 'joined' | 'leaf' | 'labeled' | 'alternating' | 'pillar' | 'diamonds' | 'signs'
@@ -633,7 +648,7 @@ type ChartType = 'bar' | 'pie' | 'line' | 'radar'
 
 - **Data only** — you generate `SlideData[]` objects. Do NOT create or modify React components
 - **Tailwind CSS only** — no custom CSS except `index.css`
-- **No images** — CSS, SVG, or placeholder boxes
+- **No inline images** — use CSS, SVG, or `image` block placeholders (always omit `src` when generating)
 - **Type safety** — all data must conform to `SlideData` union type
 - **Real data** — every value must come from the source document
 - **Chinese preferred** — use `--lang zh` default for all Chinese content

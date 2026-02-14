@@ -31,9 +31,11 @@ const BLOCK_OPTIONS: BlockOption[] = [
   { label: '饼图', category: '图表', createData: () => ({ type: 'chart', chartType: 'pie', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }] }) },
   { label: '折线图', category: '图表', createData: () => ({ type: 'chart', chartType: 'line', categories: ['一月', '二月', '三月'], lineSeries: [{ name: '数据', data: [30, 45, 60] }] }) },
   { label: '雷达图', category: '图表', createData: () => ({ type: 'chart', chartType: 'radar', indicators: [{ name: '速度', max: 100 }, { name: '质量', max: 100 }, { name: '成本', max: 100 }], radarSeries: [{ name: '数据', values: [80, 60, 70] }] }) },
+  // Media
+  { label: '图片', category: '媒体', createData: () => ({ type: 'image', placeholder: '点击添加图片' }) },
 ]
 
-const categories = ['文本', '图解', '图表']
+const categories = ['文本', '图解', '图表', '媒体']
 
 export default function AddBlockPanel({ onAdd }: AddBlockPanelProps) {
   const handleAdd = (option: BlockOption) => {

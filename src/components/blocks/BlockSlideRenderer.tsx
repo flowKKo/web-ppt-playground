@@ -57,7 +57,7 @@ export default function BlockSlideRenderer({ data, slideIndex }: BlockSlideRende
             onDragStart={beginDrag}
             spotlightRevealed={isRevealed}
           >
-            <BlockRenderer data={block.data} blockId={block.id} />
+            <BlockRenderer data={block.data} blockId={block.id} slideIndex={slideIndex} />
           </BlockWrapper>
         )
       })}

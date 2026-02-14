@@ -12,6 +12,7 @@ export const BLOCK_TYPE_META: Record<BlockType, { icon: string; label: string; c
   'hub-spoke': { icon: '✳', label: '轮辐', color: 'bg-orange-50 text-orange-600' },
   'venn': { icon: '◑', label: '韦恩', color: 'bg-indigo-50 text-indigo-600' },
   'chart': { icon: '▊', label: '图表', color: 'bg-teal-50 text-teal-600' },
+  'image': { icon: '🖼', label: '图片', color: 'bg-pink-50 text-pink-600' },
 }
 
 interface BlockLayoutPickerProps {
@@ -20,7 +21,7 @@ interface BlockLayoutPickerProps {
 }
 
 const BLOCK_TYPES: BlockType[] = [
-  'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'chart',
+  'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'chart', 'image',
 ]
 
 const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { value: string; label: string }[] }>> = {
@@ -140,6 +141,8 @@ function convertBlockType(source: BlockData, targetType: BlockType): BlockData {
       return { type: 'venn', sets: [{ label: '集合A' }, { label: '集合B' }], variant: 'classic' }
     case 'chart':
       return { type: 'chart', chartType: 'bar', bars: [{ category: 'Q1', values: [{ name: '值', value: 45 }] }, { category: 'Q2', values: [{ name: '值', value: 62 }] }] }
+    case 'image':
+      return { type: 'image', placeholder: '图片占位' }
   }
 }
 

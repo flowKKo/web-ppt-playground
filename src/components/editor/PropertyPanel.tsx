@@ -276,6 +276,7 @@ function getBlockPreview(data: BlockData): string {
     case 'hub-spoke': return data.center.label
     case 'venn': return data.sets.map((s) => s.label).join(' ∩ ')
     case 'chart': return data.chartType
+    case 'image': return data.src ? (data.alt || '已上传图片') : (data.placeholder || '图片占位')
     default: return ''
   }
 }
