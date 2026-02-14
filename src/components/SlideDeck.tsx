@@ -350,10 +350,10 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
       {/* Editor toolbar */}
       {editMode && <EditorToolbar />}
 
-      {/* Property panel — flex child, always gets full 320px */}
+      {/* Property panel — flex child, always gets full 480px */}
       {editMode && (
         <div
-          className="w-80 shrink-0 h-screen border-l overflow-hidden flex flex-col"
+          className="w-[480px] shrink-0 h-screen border-l overflow-hidden flex flex-col"
           style={{ background: colors.card, borderColor: colors.border }}
         >
           <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: colors.border }}>
