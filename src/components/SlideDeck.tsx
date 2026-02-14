@@ -10,7 +10,6 @@ import { EditorProvider, useEditor } from './editor/EditorProvider'
 import { InlineEditProvider } from './editor/InlineEditContext'
 import EditorToolbar from './editor/EditorToolbar'
 import BlockContextMenu from './editor/BlockContextMenu'
-import BlockFloatingToolbar from './editor/BlockFloatingToolbar'
 import PropertyPanel from './editor/PropertyPanel'
 import { exportDeck } from '../data/deck-io'
 
@@ -351,7 +350,6 @@ function SlideDeckInner({ slides, onBack }: Omit<SlideDeckProps, 'deckId' | 'dec
 
       {/* Editor toolbar */}
       {editMode && <EditorToolbar />}
-      {editMode && <BlockFloatingToolbar />}
       {editMode && <BlockContextMenu />}
 
       {/* Property panel — flex child, always gets full 480px */}
