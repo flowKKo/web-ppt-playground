@@ -7,6 +7,10 @@ import ContentBoxWrapper from './editor/ContentBoxWrapper'
 import OverlayLayer from './editor/OverlayLayer'
 import { SpotlightProvider } from '../hooks/useSpotlight'
 
+/** Fixed design resolution — matches Slide.tsx and Sidebar thumbnails */
+const SLIDE_W = 1920
+const SLIDE_H = 1080
+
 interface FullscreenOverlayProps {
   slides: SlideData[]
   currentIndex: number
@@ -31,6 +35,20 @@ export default function FullscreenOverlay({
   const [direction, setDirection] = useState(0)
   const [revealedCount, setRevealedCount] = useState(0)
   const prevIndex = useRef(currentIndex)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+
+  // Measure 16:9 letterbox container to compute scale
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width
+      if (w > 0) setScale(w / SLIDE_W)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const currentSlide = slides[currentIndex]
   const blockCount = getBlockCount(currentSlide)
@@ -89,7 +107,7 @@ export default function FullscreenOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-[9999]"
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
       style={{ background: colors.slide }}
     >
       {/* Left 20% — prev */}
@@ -107,28 +125,48 @@ export default function FullscreenOverlay({
         style={{ left: isFirst ? '0' : '20%' }}
       />
 
-      {/* Full-bleed slide */}
-      <AnimatePresence mode="popLayout" custom={direction}>
-        <motion.div
-          key={currentIndex}
-          custom={direction}
-          initial={{ opacity: 0, x: direction * 300 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction * -300 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full h-full px-20 py-16"
-          style={{ background: colors.slide }}
-        >
-          <div className="relative w-full h-full">
-            <SpotlightProvider value={{ active: spotlight, revealedCount }}>
-              <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
-                <SlideContent data={slides[currentIndex]} slideIndex={currentIndex} />
-              </ContentBoxWrapper>
-            </SpotlightProvider>
-            <OverlayLayer slideIndex={currentIndex} readOnly />
-          </div>
-        </motion.div>
-      </AnimatePresence>
+      {/* 16:9 letterbox container — scale content from fixed design resolution */}
+      <div
+        ref={containerRef}
+        className="overflow-hidden relative"
+        style={{
+          width: 'min(100vw, calc(100vh * 16 / 9))',
+          aspectRatio: '16/9',
+        }}
+      >
+        <AnimatePresence mode="popLayout" custom={direction}>
+          <motion.div
+            key={currentIndex}
+            custom={direction}
+            initial={{ opacity: 0, x: direction * 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -300 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0"
+          >
+            <div
+              className="origin-top-left"
+              style={{
+                width: SLIDE_W,
+                height: SLIDE_H,
+                transform: `scale(${scale})`,
+                background: colors.slide,
+              }}
+            >
+              <div className="w-full h-full px-40 py-32">
+                <div className="relative w-full h-full">
+                  <SpotlightProvider value={{ active: spotlight, revealedCount }}>
+                    <ContentBoxWrapper slideIndex={currentIndex} slideData={slides[currentIndex]}>
+                      <SlideContent data={slides[currentIndex]} slideIndex={currentIndex} />
+                    </ContentBoxWrapper>
+                  </SpotlightProvider>
+                  <OverlayLayer slideIndex={currentIndex} readOnly />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }

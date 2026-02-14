@@ -24,7 +24,7 @@ interface SidebarProps {
   onUpdateDeckMeta?: (title: string, description: string) => void
 }
 
-const SLIDE_W = 960
+const SLIDE_W = 1920
 const SIDEBAR_MIN = 200
 const SIDEBAR_MAX = 400
 
@@ -322,7 +322,7 @@ export default function Sidebar({
                             background: colors.slide,
                           }}
                         >
-                          <div className="w-full h-full px-20 py-16 flex flex-col justify-center">
+                          <div className="w-full h-full px-40 py-32 flex flex-col justify-center">
                             <SlideContent data={slide} slideIndex={i} />
                           </div>
                         </div>
