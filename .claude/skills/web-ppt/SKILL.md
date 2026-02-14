@@ -352,40 +352,140 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
-**Common block layout patterns:**
+**Content-aware block height guide:**
+
+The design canvas is 1920×1080 (content area ~1600×824px after padding). Block heights are percentages of this content area. **Size blocks to fit their content — never default to `height: 96`.**
+
+| Block Type | Content Scenario | Recommended Height |
+|-----------|-----------------|-------------------|
+| `grid-item` | 1 row (2-3 items) | 25-35% |
+| `grid-item` | 2 rows (4-6 items) | 45-55% |
+| `grid-item` | 3 rows (7-9 items) | 70-85% |
+| `sequence` (horizontal) | 3-5 steps | 20-30% |
+| `sequence` (vertical) | 3-5 steps | 50-70% |
+| `chart` | any type | 50-70% |
+| `funnel` / `compare` | 3-5 layers/sides | 50-65% |
+| `concentric` / `hub-spoke` / `venn` | SVG diagram | width × 0.6 (keep ~1.5:1 ratio) |
+| `title-body` | heading + 1-2 lines | 20-30% |
+| `title-body` | heading + paragraph | 30-45% |
+| `image` | accent / fill | 25-40% |
+| `image` | hero / showcase | 50-80% |
+
+**8 layout patterns** (use pattern letter in Phase 2 design notes):
 
 ```
-Two-column (text + diagram):
-  title-body:  { x: 2, y: 2,  width: 35, height: 96 }
-  diagram:     { x: 40, y: 2, width: 58, height: 96 }
+Pattern A — Vertical stack: diagram + image bottom
+  diagram: { x: 2, y: 2,  width: 96, height: 55 }
+  image:   { x: 2, y: 60, width: 96, height: 36 }
 
-Two-row (stacked):
-  top block:   { x: 2, y: 2,  width: 96, height: 45 }
-  bottom block:{ x: 2, y: 52, width: 96, height: 46 }
+Pattern B — Side by side: diagram + image (6:4)
+  diagram: { x: 2, y: 2,  width: 58, height: 96 }
+  image:   { x: 62, y: 2, width: 36, height: 96 }
 
-Dashboard (2×2):
-  top-left:    { x: 2, y: 2,  width: 47, height: 46 }
-  top-right:   { x: 51, y: 2, width: 47, height: 46 }
-  bottom-left: { x: 2, y: 52, width: 47, height: 46 }
-  bottom-right:{ x: 51, y: 52, width: 47, height: 46 }
+Pattern C — Top chart + bottom image
+  chart:   { x: 2, y: 2,  width: 96, height: 60 }
+  image:   { x: 2, y: 65, width: 96, height: 32 }
+
+Pattern D — Header + two columns
+  title:   { x: 2, y: 2,  width: 96, height: 18 }
+  diagram: { x: 2, y: 23, width: 55, height: 74 }
+  image:   { x: 60, y: 23, width: 38, height: 74 }
+
+Pattern E — Three columns: text + diagram + image
+  text:    { x: 2, y: 2,  width: 30, height: 96 }
+  diagram: { x: 34, y: 2, width: 32, height: 96 }
+  image:   { x: 68, y: 2, width: 30, height: 96 }
+
+Pattern F — Dashboard: 2 charts + image + text
+  chart1:  { x: 2, y: 2,  width: 47, height: 48 }
+  chart2:  { x: 51, y: 2, width: 47, height: 48 }
+  image:   { x: 2, y: 53, width: 47, height: 44 }
+  text:    { x: 51, y: 53, width: 47, height: 44 }
+
+Pattern G — Golden ratio: wide diagram + side panel
+  diagram: { x: 2, y: 2,  width: 62, height: 96 }
+  text:    { x: 66, y: 2, width: 32, height: 45 }
+  image:   { x: 66, y: 50, width: 32, height: 47 }
+
+Pattern H — Compact grid + hero image
+  grid:    { x: 2, y: 2,  width: 50, height: 55 }
+  image:   { x: 2, y: 60, width: 50, height: 37 }
+  image2:  { x: 54, y: 2, width: 44, height: 96 }
 ```
+
+**Anti-patterns (NEVER do these):**
+- `height: 96` on a 1-row grid-item (creates ~260px-tall cards with 60% empty space)
+- `height: 96` on a horizontal sequence (natural height is ~120px, rest is wasted)
+- 3+ consecutive block-slides with the same layout pattern
+- Single block filling 96×96 (use standalone slide type instead)
+- SVG diagram in a square container (use width:height ratio ~1.5:1)
 
 **Image block** — placeholder for screenshots, photos, or illustrations:
 
 ```ts
-{ type: 'image', placeholder: '产品界面截图', alt: '产品截图' }
+{ type: 'image', placeholder: '数据中心现代化服务器机房全景', alt: '数据中心', fit: 'cover' }
 ```
 
-- When generating slides, **always omit `src`** (leave as placeholder mode). Users upload actual images later.
-- Use `placeholder` to describe what image should go there (e.g., "架构图", "产品截图", "团队合影")
-- Image blocks can fill empty space when content is insufficient for a full diagram
+- **Always omit `src`** — generate in placeholder mode only. Users upload actual images later.
+- **Minimum size**: `width: 25, height: 25` (smaller blocks look like broken thumbnails)
+
+**When to add an image block:**
+
+| Scenario | Action |
+|----------|--------|
+| Diagram content fills <60% of slide | Add image block to fill remaining space |
+| Text-heavy slide needs visual break | Add image block alongside text |
+| Product / UI discussion | Add screenshot placeholder |
+| Architecture / system topic | Add diagram placeholder |
+| Dashboard with extra space | Add contextual photo |
+| Any block-slide with only 1 block | Add image as second block |
+
+**Placeholder naming — be specific and descriptive:**
+
+| Good placeholder | Bad placeholder |
+|-----------------|----------------|
+| `'高性能计算集群服务器机房实景'` | `'图片'` |
+| `'移动端用户注册流程界面截图'` | `'截图'` |
+| `'团队成员在办公室协作讨论场景'` | `'团队'` |
+| `'云原生微服务架构拓扑示意图'` | `'架构图'` |
+| `'季度销售数据可视化仪表盘'` | `'数据'` |
+
+**`fit` selection guide:**
+- `cover` (default) — photos, scenes, backgrounds → crops to fill, no letterboxing
+- `contain` — screenshots, diagrams, logos → shows full image with possible letterboxing
 
 **When to use block-slide:**
 - Combining a text explanation with a diagram side by side
 - Dashboard-style slides with multiple small charts/diagrams
 - Complex layouts that don't fit a single slide type
 - When you need a title + body PLUS a diagram on the same slide
-- When content is sparse: combine diagram + image placeholder to fill the slide
+- When content is sparse — combine diagram + image placeholder to fill the slide
+- When a diagram needs a **specific height** less than full-screen (e.g., 1-row grid at 30%)
+- When you want to **pair two diagram types** on one slide (e.g., chart + sequence)
+- When you want to add an **image accent** alongside any diagram
+- When a standalone slide type would leave >35% empty space
+
+**When NOT to use block-slide:**
+- Single full-screen chart with no companions → use standalone `chart` type
+- Pure title or section break → use `title` type
+- Single key insight with no data → use `key-point` type
+- Content naturally fills a standalone type (e.g., 6-item grid, 5-step sequence at full width)
+
+---
+
+### Visual Composition Strategy (5 Core Principles)
+
+These principles govern every block-slide layout decision:
+
+**1. Size blocks by content, not by default** — Estimate actual content height before assigning block dimensions. A 1-row grid of 3 items is ~160px tall (≈20% of 824px content area). Giving it `height: 96` wastes 600px. Use the height guide table above.
+
+**2. Use 2-4 blocks per block-slide** — A single block filling the entire canvas is just a standalone slide type with extra overhead. Two blocks create visual pairing. Three blocks create hierarchy. Four blocks create a dashboard. More than four gets cluttered.
+
+**3. Vary layouts across the deck** — No more than 2 consecutive block-slides should use the same layout pattern (A-H). Track which patterns you've used and rotate. A deck of 10 block-slides should use at least 4 different patterns.
+
+**4. Fill sparse areas with image blocks** — When a diagram's content occupies <60% of the slide area, add an `image` block to fill the gap. This is the primary mechanism for preventing large empty areas. Every block-slide should be evaluated: "would an image block improve this?"
+
+**5. Balance visual weight** — Heavy content blocks (data-dense charts, multi-row grids) should be paired with lighter elements (images, short text). Don't stack two heavy diagrams unless creating a dashboard layout (Pattern F).
 
 ---
 
@@ -406,18 +506,27 @@ For EACH slide, produce a brief design rationale:
 ```
 Slide 3: "季度增长趋势"
   → Data: Q1-Q4 revenue from source doc (280, 340, 410, 520)
-  → Layout: chart (line) — shows trend over time
-  → Why not bar? Trend continuity is the message, not category comparison
+  → Type: block-slide (chart + image)
+  → Sizing: chart needs flex space → height:65%; image fills bottom → height:28%
+  → Composition: Pattern C — chart top (96×65%), image bottom (96×28%)
+  → Image: '季度营收增长趋势分析图表背景'
+  → Why block? Chart alone leaves title area sparse; image adds context
 
 Slide 5: "技术栈全景"
   → Data: 6 technology domains from source doc
-  → Layout: grid-item, variant: outline, columns: 3
-  → Why outline? No numeric values, just category + description
+  → Type: block-slide (grid-item + image)
+  → Sizing: 6 items = 3 cols × 2 rows → ~320px → height ≈ 55%
+  → Composition: Pattern B — grid left (58×55%), image right (36×55%), both at y:2
+  → Image: '技术架构分层示意图'
+  → Grid: variant: outline, columns: 3
+  → Why not height:96? 2-row grid at full height = 260px-tall cards with 50% wasted space
 
 Slide 7: "用户转化路径"
   → Data: Visit→Register→Pay with exact numbers
-  → Layout: funnel, variant: funnel
-  → Why not sequence? Funnel emphasizes volume drop-off
+  → Type: block-slide (funnel + title-body)
+  → Sizing: 4-layer funnel stretches well → height:90%
+  → Composition: Pattern G — funnel left (60×90%), title-body right (34×40% at y:25)
+  → Why block? Title-body block adds conversion insight text alongside funnel visual
 ```
 
 **Slide type selection guide:**
@@ -442,7 +551,10 @@ Slide 7: "用户转化路径"
 | Layered architecture | `concentric` (circles) | Nested layers, inside-out |
 | Concept overlap | `venn` (classic) | Shared and unique traits |
 | Mixed content | `block-slide` | Text + diagram on same slide |
-| Visual placeholder | `block-slide` + `image` block | Space for screenshots, photos, illustrations |
+| Sparse content + visual fill | `block-slide` + `image` block | Diagram occupies <60% → add image to balance |
+| Product / UI showcase | `block-slide` + `image` block | Screenshot placeholder + caption or metrics |
+| Architecture / system diagram | `block-slide` + `image` block | Image placeholder for complex diagrams + text explanation |
+| Data + context | `block-slide` (chart + image) | Chart with accompanying photo/illustration |
 
 ### Phase 3: Implement — Generate Typed Data
 
@@ -463,6 +575,19 @@ export const myDeck: DeckMeta = {
 ```
 
 No manual registration needed — `import.meta.glob` auto-discovers files in `src/data/user-decks/`.
+
+### Post-Generation Visual Audit (MANDATORY)
+
+After generating all slides, review every slide against this checklist:
+
+1. **No gratuitous `height: 96`** — only use height ≥90% when the block content genuinely needs ~800px (e.g., 2-row grid, large chart, 5+ layer funnel). Single-row grids and horizontal sequences should be 25-35%.
+2. **Single-row grid-item height ≤ 35%** — 1 row of 3 items at height:96 creates ~260px-tall cards with sparse content. Cap at 35%.
+3. **≥50% of block-slides include an `image` block** — image placeholders enrich visual density and break monotony.
+4. **No 3+ consecutive identical layouts** — vary layout patterns across consecutive block-slides (e.g., don't use Pattern A three times in a row).
+5. **Every image block has a descriptive `placeholder`** — e.g., "数据中心服务器机房实景", not "图片" or "image".
+6. **No slide has >35% visual empty space** — if a block-slide looks sparse, add an image block or reduce block heights.
+7. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke use viewBox 800×480; avoid square or overly tall containers.
+8. **Block positions don't overlap and gaps are ≤5%** — blocks should tile neatly with 2-5% margins.
 
 ---
 
@@ -496,6 +621,25 @@ Every slide must contain **real data from the source document**:
 | `hub-spoke` | 1 center + 3-8 spokes |
 | `concentric` | 3-5 rings |
 | `venn` | 2-4 sets |
+
+### Density ↔ Size Strategy
+
+Content density determines block sizing. **Never give a block more height than its content needs.**
+
+| Scenario | Content Fill | Strategy |
+|----------|-------------|----------|
+| grid-item 1 row (3 items) | ~160px actual | height: 25-35%, add image block below |
+| grid-item 2 rows (6 items) | ~320px actual | height: 45-55%, may pair with side image |
+| sequence horizontal (4 steps) | ~120px actual | height: 20-30%, use remaining space for image or text |
+| chart (any type) | flex-fill | height: 50-70%, charts stretch well |
+| funnel/pyramid (4 layers) | flex-fill | height: 50-65%, stretches to fit |
+| SVG diagrams (venn/concentric/hub-spoke) | viewBox 800×480 | keep ~1.5:1 aspect ratio (e.g., width:60 height:45) |
+| image placeholder | varies | height: 30-80% depending on purpose |
+
+**Rules:**
+- No slide should have **>35% visually empty area** (white space without content)
+- When content fills <60% of the slide, add an `image` block to complement
+- When content fills >90%, consider splitting across two slides
 
 ### Visual Rhythm
 
@@ -648,7 +792,7 @@ type ChartType = 'bar' | 'pie' | 'line' | 'radar'
 
 - **Data only** — you generate `SlideData[]` objects. Do NOT create or modify React components
 - **Tailwind CSS only** — no custom CSS except `index.css`
-- **No inline images** — use CSS, SVG, or `image` block placeholders (always omit `src` when generating)
+- **No inline images, but actively use `image` blocks** — never embed base64 or external URLs; instead, use `image` block placeholders (always omit `src`) to fill visual gaps, accompany diagrams, and enrich sparse slides. Aim for **at least 50% of block-slides** to include an image block.
 - **Type safety** — all data must conform to `SlideData` union type
 - **Real data** — every value must come from the source document
 - **Chinese preferred** — use `--lang zh` default for all Chinese content
