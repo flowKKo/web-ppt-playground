@@ -40,9 +40,9 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
   // Strip title/body from SlideData when converting back to BlockData
   switch (slideData.type) {
     case 'grid-item':
-      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns }
+      return { type: 'grid-item', items: slideData.items, variant: slideData.variant, columns: slideData.columns, gap: slideData.gap }
     case 'sequence':
-      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction }
+      return { type: 'sequence', steps: slideData.steps, variant: slideData.variant, direction: slideData.direction, gap: slideData.gap }
     case 'compare':
       return { type: 'compare', mode: slideData.mode, sides: slideData.sides, quadrantItems: slideData.quadrantItems, xAxis: slideData.xAxis, yAxis: slideData.yAxis, visible: slideData.visible, hidden: slideData.hidden }
     case 'funnel':

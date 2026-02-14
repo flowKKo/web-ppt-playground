@@ -20,11 +20,11 @@ interface BlockLayoutPickerProps {
   onChange: (data: BlockData) => void
 }
 
-const BLOCK_TYPES: BlockType[] = [
+export const BLOCK_TYPES: BlockType[] = [
   'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'chart', 'image',
 ]
 
-const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { value: string; label: string }[] }>> = {
+export const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { value: string; label: string }[] }>> = {
   'grid-item': {
     field: 'variant',
     options: [
@@ -105,7 +105,7 @@ const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { val
   },
 }
 
-function getCurrentVariant(data: BlockData): string | undefined {
+export function getCurrentVariant(data: BlockData): string | undefined {
   switch (data.type) {
     case 'grid-item': return data.variant
     case 'sequence': return data.variant
@@ -119,7 +119,7 @@ function getCurrentVariant(data: BlockData): string | undefined {
   }
 }
 
-function convertBlockType(source: BlockData, targetType: BlockType): BlockData {
+export function convertBlockType(source: BlockData, targetType: BlockType): BlockData {
   if (source.type === targetType) return source
 
   switch (targetType) {
@@ -146,7 +146,7 @@ function convertBlockType(source: BlockData, targetType: BlockType): BlockData {
   }
 }
 
-function applyVariant(data: BlockData, value: string): BlockData {
+export function applyVariant(data: BlockData, value: string): BlockData {
   switch (data.type) {
     case 'grid-item': return { ...data, variant: value as typeof data.variant }
     case 'sequence': return { ...data, variant: value as typeof data.variant }

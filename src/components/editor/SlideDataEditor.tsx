@@ -1,4 +1,5 @@
 import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData } from '../../data/types'
+import { colors } from '../../theme/swiss'
 import ArrayEditor from './ArrayEditor'
 
 interface SlideDataEditorProps {
@@ -80,6 +81,33 @@ function CheckboxInput({ label, value, onChange }: { label: string; value: boole
   )
 }
 
+function OptionalColorInput({ label, value, onChange, defaultValue }: { label: string; value?: string; onChange: (v: string | undefined) => void; defaultValue: string }) {
+  const displayColor = value || defaultValue
+  return (
+    <label className="block">
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+      <div className="flex items-center gap-2 mt-1">
+        <input
+          type="color"
+          value={displayColor}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-8 h-8 rounded border border-gray-200 cursor-pointer p-0.5"
+        />
+        <span className="text-xs text-gray-400 font-mono flex-1">{value || defaultValue}</span>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer px-1"
+          >
+            清除
+          </button>
+        )}
+      </div>
+    </label>
+  )
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
@@ -101,6 +129,14 @@ const defaultBodySizes: Record<string, number> = {
   title: 24, 'key-point': 20, chart: 18,
   'grid-item': 18, sequence: 18, compare: 18,
   funnel: 18, concentric: 18, 'hub-spoke': 18, venn: 18,
+}
+const defaultTitleColors: Record<string, string> = Object.fromEntries(
+  ['title', 'key-point', 'chart', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn'].map(k => [k, colors.textPrimary])
+)
+const defaultTextColors: Record<string, string> = {
+  title: colors.textSecondary, 'key-point': colors.textSecondary, chart: colors.textSecondary,
+  'grid-item': '#ffffff', sequence: '#ffffff', compare: colors.textSecondary,
+  funnel: '#ffffff', concentric: colors.textPrimary, 'hub-spoke': '#ffffff', venn: colors.textPrimary,
 }
 
 export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEditorProps) {
@@ -134,6 +170,24 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
     </Section>
   ) : null
 
+  // Color controls — available for all slide types except block-slide
+  const colorFields = data.type !== 'block-slide' ? (
+    <Section title="文字颜色">
+      <OptionalColorInput
+        label="标题颜色"
+        value={'titleColor' in data ? (data as { titleColor?: string }).titleColor : undefined}
+        defaultValue={defaultTitleColors[data.type] ?? colors.textPrimary}
+        onChange={(v) => onChange({ ...data, titleColor: v })}
+      />
+      <OptionalColorInput
+        label="内容颜色"
+        value={'textColor' in data ? (data as { textColor?: string }).textColor : undefined}
+        defaultValue={defaultTextColors[data.type] ?? colors.textSecondary}
+        onChange={(v) => onChange({ ...data, textColor: v })}
+      />
+    </Section>
+  ) : null
+
   // Common title/body fields — hidden in block mode
   const commonFields = isBlock ? null : (
     <Section title="基本信息">
@@ -157,6 +211,7 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
             <TextInput label="徽标" value={data.badge ?? ''} onChange={(v) => onChange({ ...data, badge: v })} />
           </Section>
           {fontSizeFields}
+          {colorFields}
         </div>
       )
 
@@ -169,38 +224,39 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
             <TextInput label="正文" value={data.body ?? ''} onChange={(v) => onChange({ ...data, body: v })} />
           </Section>
           {fontSizeFields}
+          {colorFields}
         </div>
       )
 
     case 'chart':
-      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} fontSizeFields={fontSizeFields} />
+      return <ChartEditor data={data} onChange={onChange} isBlock={isBlock} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'grid-item':
-      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <GridItemEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'sequence':
-      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <SequenceEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'compare':
-      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <CompareEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'funnel':
-      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <FunnelEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'concentric':
-      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <ConcentricEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'hub-spoke':
-      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <HubSpokeEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
 
     case 'venn':
-      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} />
+      return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
   }
 }
 
 // ─── Chart Editor ───
 
-function ChartEditor({ data, onChange, isBlock, fontSizeFields }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean; fontSizeFields?: React.ReactNode }) {
+function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: { data: ChartSlideData; onChange: (d: SlideData) => void; isBlock?: boolean; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {!isBlock && (
@@ -211,6 +267,7 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields }: { data: ChartS
         </Section>
       )}
       {!isBlock && fontSizeFields}
+      {!isBlock && colorFields}
 
       {data.chartType === 'bar' && data.bars && (
         <Section title="柱状图数据">
@@ -332,11 +389,12 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields }: { data: ChartS
 
 // ─── Engine Editors ───
 
-function GridItemEditor({ data, onChange, commonFields, fontSizeFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode }) {
+function GridItemEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: GridItemSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
   return (
     <div className="space-y-4">
       {commonFields}
       {fontSizeFields}
+      {colorFields}
       <Section title="网格配置">
         <NumberInput label="列数" value={data.columns ?? 0} onChange={(v) => onChange({ ...data, columns: v || undefined })} min={0} max={6} />
         <NumberInput label="间距 (px)" value={data.gap ?? 16} onChange={(v) => onChange({ ...data, gap: v })} min={0} max={64} step={2} />
