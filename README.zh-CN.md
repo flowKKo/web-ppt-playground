@@ -4,7 +4,10 @@
 
 在浏览器中创建精美演示文稿 — 图表、图解、AI 一站搞定。
 
-[English](README.md) · **简体中文** · [Official Website](https://www.presenta.help/en/) · [官网](https://www.presenta.help/zh/)
+[English](README.md) · **简体中文** · [官网](https://www.presenta.help/zh/)
+
+[![][license-shield]][license-link]
+[![][website-shield]][website-link]
 
 </div>
 
@@ -55,4 +58,11 @@ npm run dev
 
 ## License
 
-Private project.
+[GPL-3.0](LICENSE)
+
+<!-- LINK GROUP -->
+
+[license-shield]: https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square&labelColor=black
+[license-link]: ./LICENSE
+[website-shield]: https://img.shields.io/badge/Website-presenta.help-blue?style=flat-square&labelColor=black
+[website-link]: https://www.presenta.help/zh/

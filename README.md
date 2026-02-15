@@ -4,7 +4,10 @@
 
 Create beautiful presentations with diagrams, charts, and AI — right in your browser.
 
-**English** · [简体中文](README.zh-CN.md) · [Official Website](https://www.presenta.help/en/) · [官网](https://www.presenta.help/zh/)
+**English** · [简体中文](README.zh-CN.md) · [Official Website](https://www.presenta.help/en/)
+
+[![][license-shield]][license-link]
+[![][website-shield]][website-link]
 
 </div>
 
@@ -55,4 +58,11 @@ Generate a complete presentation from a script using Claude Code:
 
 ## License
 
-Private project.
+[GPL-3.0](LICENSE)
+
+<!-- LINK GROUP -->
+
+[license-shield]: https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square&labelColor=black
+[license-link]: ./LICENSE
+[website-shield]: https://img.shields.io/badge/Website-presenta.help-blue?style=flat-square&labelColor=black
+[website-link]: https://www.presenta.help/en/
