@@ -59,7 +59,7 @@ Script (slides.md)
 
 > **CRITICAL**: Before designing any slide, review this catalog. Every slide you generate MUST use one of these types with the exact data shape specified. There are NO other options.
 
-### A. Standalone Slide Types (10 types)
+### A. Standalone Slide Types (13 types)
 
 These are top-level `SlideData` types. Each renders as a full slide.
 
@@ -359,6 +359,76 @@ Overlapping sets showing shared and unique attributes.
 
 ---
 
+#### 11. `cycle` — Circular Process Diagram
+
+Cyclic processes (PDCA, lifecycle, feedback loops). Steps arranged in a closed loop.
+
+```ts
+{
+  type: 'cycle',
+  title: string,
+  body?: string,
+  steps: { label: string, description?: string }[],  // 3-8 steps
+  variant: 'circular' | 'gear' | 'loop',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `circular` | Steps on a circle with arc arrows | PDCA, lifecycle, iterative processes |
+| `gear` | Gear-tooth shaped nodes | Interlocking mechanisms, systems |
+| `loop` | Oval/racetrack layout | Continuous loops, feedback cycles |
+
+---
+
+#### 12. `table` — Table / Matrix Layout
+
+Structured data in rows and columns with header styling.
+
+```ts
+{
+  type: 'table',
+  title: string,
+  body?: string,
+  headers: string[],             // column headers
+  rows: { cells: string[], highlight?: boolean }[],  // 2-10 rows
+  variant: 'striped' | 'bordered' | 'highlight',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `striped` | Alternating row backgrounds | General data display |
+| `bordered` | All cell borders visible | Dense data, comparisons |
+| `highlight` | Accent color on highlighted rows | Emphasizing key rows |
+
+---
+
+#### 13. `roadmap` — Multi-Track Timeline / Roadmap
+
+Phased planning with status tracking per item.
+
+```ts
+{
+  type: 'roadmap',
+  title: string,
+  body?: string,
+  phases: {
+    label: string,
+    items: { label: string, status?: 'done' | 'active' | 'pending' }[]
+  }[],  // 2-6 phases
+  variant: 'horizontal' | 'vertical' | 'milestone',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `horizontal` | Column-based phase cards | Product roadmaps, quarterly plans |
+| `vertical` | Vertical timeline with numbered nodes | Project phases, historical timelines |
+| `milestone` | Diamond markers on horizontal track | Release milestones, key deliverables |
+
+---
+
 ### B. Block-Slide (Free Layout Composition)
 
 The `block-slide` type enables **multiple diagrams on a single slide** via positioned blocks on a canvas.
@@ -377,11 +447,11 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
   y: number,          // percentage 0-100 (top edge)
   width: number,      // percentage 0-100
   height: number,     // percentage 0-100
-  data: BlockData,    // one of 9 block types
+  data: BlockData,    // one of 12 block types
 }
 ```
 
-**10 block data types** (same engines as standalone slides, but without title/body wrappers):
+**13 block data types** (same engines as standalone slides, but without title/body wrappers):
 
 | Block `type` | Fields (same as standalone minus `title`/`body`) |
 |-------------|------------------------------------------------|
@@ -393,6 +463,9 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `concentric` | `{ rings, variant }` |
 | `hub-spoke` | `{ center, spokes, variant }` |
 | `venn` | `{ sets, intersectionLabel?, variant }` |
+| `cycle` | `{ steps, variant }` |
+| `table` | `{ headers, rows, variant }` |
+| `roadmap` | `{ phases, variant }` |
 | `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, waterfallItems?, comboSeries?, scatterSeries?, scatterXAxis?, scatterYAxis?, gaugeData?, treemapData?, sankeyNodes?, sankeyLinks?, heatmapYCategories?, heatmapData?, sunburstData?, boxplotItems?, ganttTasks?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
@@ -409,7 +482,10 @@ The design canvas is 1920×1080 (content area ~1600×824px after padding). Block
 | `sequence` (vertical) | 3-5 steps | 50-70% |
 | `chart` | any type | 50-70% |
 | `funnel` / `compare` | 3-5 layers/sides | 50-65% |
-| `concentric` / `hub-spoke` / `venn` | SVG diagram | width × 0.6 (keep ~1.5:1 ratio) |
+| `concentric` / `hub-spoke` / `venn` / `cycle` | SVG diagram | width × 0.6 (keep ~1.5:1 ratio) |
+| `table` | 3-5 rows | 35-50% |
+| `table` | 6-10 rows | 55-75% |
+| `roadmap` | 2-4 phases | 45-65% |
 | `title-body` | heading + 1-2 lines | 20-30% |
 | `title-body` | heading + paragraph | 30-45% |
 | `image` | accent / fill | 25-40% |
@@ -610,6 +686,12 @@ Slide 7: "用户转化路径"
 | Hierarchical drill-down | `chart` (sunburst) | Concentric ring breakdown |
 | Statistical variance | `chart` (boxplot) | Distribution comparison across groups |
 | Project timeline | `chart` (gantt) | Task scheduling with start/end |
+| Cyclic process / PDCA | `cycle` (circular) | Iterative loops, continuous improvement |
+| Interlocking systems | `cycle` (gear) | Mechanism, interconnected processes |
+| Structured data display | `table` (striped) | Tabular comparisons, status matrices |
+| Product roadmap | `roadmap` (horizontal) | Quarterly plans, phased rollouts |
+| Project milestones | `roadmap` (milestone) | Key deliverables on timeline |
+| Historical timeline | `roadmap` (vertical) | Chronological events, project phases |
 | Mixed content | `block-slide` | Text + diagram on same slide |
 | Sparse content + visual fill | `block-slide` + `image` block | Diagram occupies <60% → add image to balance |
 | Product / UI showcase | `block-slide` + `image` block | Screenshot placeholder + caption or metrics |
@@ -650,7 +732,7 @@ After generating all slides, review EVERY slide against this checklist. **Fix vi
 5. **No gratuitous `height: 96`** — only use height ≥90% when content genuinely needs ~800px (3-row grid, large chart, 5+ funnel layers).
 6. **Single-row grid-item height ≤ 35%** — 1 row of 3 items at height:96 = ~260px-tall cards with 60% wasted space. Cap at 35%.
 7. **Horizontal sequence height ≤ 30%** — a 4-step horizontal sequence is ~120px actual height. height:80 wastes 540px.
-8. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke use viewBox 800×480; avoid square containers.
+8. **SVG diagram blocks maintain ~1.5:1 aspect ratio** — venn, concentric, hub-spoke, cycle use viewBox 800×480; avoid square containers.
 9. **Block positions don't overlap and gaps are ≤5%** — blocks tile neatly with 2-5% margins.
 
 **Content Quality:**
@@ -757,6 +839,9 @@ Every slide must contain **real data from the source document**:
 | `hub-spoke` | 1 center + 3-8 spokes |
 | `concentric` | 3-5 rings |
 | `venn` | 2-4 sets |
+| `cycle` | 3-8 steps |
+| `table` | 2-6 columns, 2-10 rows |
+| `roadmap` | 2-6 phases, 1-5 items per phase |
 
 ### Density ↔ Size Strategy
 
@@ -769,7 +854,7 @@ Content density determines block sizing. **Never give a block more height than i
 | sequence horizontal (4 steps) | ~120px actual | height: 20-30%, use remaining space for image or text |
 | chart (any type) | flex-fill | height: 50-70%, charts stretch well |
 | funnel/pyramid (4 layers) | flex-fill | height: 50-65%, stretches to fit |
-| SVG diagrams (venn/concentric/hub-spoke) | viewBox 800×480 | keep ~1.5:1 aspect ratio (e.g., width:60 height:45) |
+| SVG diagrams (venn/concentric/hub-spoke/cycle) | viewBox 800×480 | keep ~1.5:1 aspect ratio (e.g., width:60 height:45) |
 | image placeholder | varies | height: 30-80% depending on purpose |
 
 **Rules:**
@@ -802,7 +887,7 @@ Is the content a single diagram (grid/sequence/chart/funnel/etc.)?
 | Slide Category | Target % | Purpose |
 |---|---|---|
 | `title` + `key-point` | 15-25% | Breathing room, section breaks, hero statements |
-| Standalone diagrams (`grid-item`, `sequence`, `compare`, `funnel`, `concentric`, `hub-spoke`, `venn`) | 20-35% | Full-screen diagrams that fill the slide naturally |
+| Standalone diagrams (`grid-item`, `sequence`, `compare`, `funnel`, `concentric`, `hub-spoke`, `venn`, `cycle`, `table`, `roadmap`) | 20-35% | Full-screen diagrams that fill the slide naturally |
 | Standalone `chart` | 10-20% | Full-screen data visualizations |
 | `block-slide` | 25-40% | Multi-element compositions, text+diagram pairs |
 
@@ -908,7 +993,7 @@ All slides support `titleSize?: number` (px) and `bodySize?: number` (px) to ove
 |---------------|------------|-----------|-------|
 | Section divider (`title` type) | `72` | `28` | Larger for visual impact; deck opener can go up to `80` |
 | Key takeaway (`key-point` type) | `56` | `24` | Slightly smaller than section divider |
-| Content slides (all diagram/chart types) | `40` | `20` | Unified across grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart |
+| Content slides (all diagram/chart types) | `40` | `20` | Unified across grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, chart |
 | Block-slide title | — | — | block-slide `title` is rendered by the shell; individual blocks use their own engine defaults |
 
 **Font Size Scaling by Content Density (CRITICAL):**
@@ -938,7 +1023,7 @@ All slides support `titleSize?: number` (px) and `bodySize?: number` (px) to ove
 **Rules:**
 
 1. **Set `titleSize` and `bodySize` on every slide** — do not rely on CSS defaults, which vary across slide types and produce inconsistent title sizes.
-2. **All content slides use the same `titleSize: 40`** — grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, and chart must all share the same title size for visual coherence.
+2. **All content slides use the same `titleSize: 40`** — grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, and chart must all share the same title size for visual coherence.
 3. **Section dividers (`title` type) get `titleSize: 72`** — these are meant to be high-impact, big-text transition pages. The deck opening slide can use `titleSize: 80`.
 4. **Scale hero slides by content density** — `title` and `key-point` slides with fewer elements (no subtitle, no body) must increase `titleSize` to fill the visual space. See the scaling table above.
 5. **Subtitle and body sizes must also be consistent** — use `bodySize: 20` for all content slides, `bodySize: 28` for section dividers.
@@ -1059,6 +1144,28 @@ interface VennSlideData {
   variant: 'classic' | 'linear' | 'linear-filled'
 }
 
+interface CycleSlideData {
+  type: 'cycle'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  steps: { label: string; description?: string }[]
+  variant: 'circular' | 'gear' | 'loop'
+}
+
+interface TableSlideData {
+  type: 'table'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  headers: string[]
+  rows: { cells: string[]; highlight?: boolean }[]
+  variant: 'striped' | 'bordered' | 'highlight'
+}
+
+interface RoadmapSlideData {
+  type: 'roadmap'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  phases: { label: string; items: { label: string; status?: 'done' | 'active' | 'pending' }[] }[]
+  variant: 'horizontal' | 'vertical' | 'milestone'
+}
+
 interface BlockSlideData {
   type: 'block-slide'; title: string; blocks: ContentBlock[]
 }
@@ -1088,7 +1195,7 @@ interface SunburstNode { name: string; value?: number; children?: SunburstNode[]
 interface BoxplotItem { name: string; values: [number, number, number, number, number] }
 interface GanttTask { name: string; start: number; end: number; category?: string }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
-// BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart, image
+// BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, chart, image
 // Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 // ─── Variant Unions ───
@@ -1098,6 +1205,9 @@ type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
 type ConcentricVariant = 'circles' | 'diamond' | 'target'
 type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
 type VennVariant = 'classic' | 'linear' | 'linear-filled'
+type CycleVariant = 'circular' | 'gear' | 'loop'
+type TableVariant = 'striped' | 'bordered' | 'highlight'
+type RoadmapVariant = 'horizontal' | 'vertical' | 'milestone'
 type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge' | 'treemap' | 'sankey' | 'heatmap' | 'sunburst' | 'boxplot' | 'gantt'
 ```
 

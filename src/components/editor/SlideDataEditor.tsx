@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData } from '../../data/types'
+import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData, CycleSlideData, TableSlideData, RoadmapSlideData } from '../../data/types'
 import { colors, COLOR_PALETTES } from '../../theme/swiss'
 import ArrayEditor from './ArrayEditor'
 
@@ -185,25 +185,28 @@ function PalettePicker({ value, onChange }: { value?: string; onChange: (v: stri
   )
 }
 
-const paletteTypes = new Set(['grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'chart'])
+const paletteTypes = new Set(['grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'chart'])
 
 const defaultTitleSizes: Record<string, number> = {
   title: 60, 'key-point': 48, chart: 36,
   'grid-item': 36, sequence: 36, compare: 36,
   funnel: 36, concentric: 36, 'hub-spoke': 36, venn: 36,
+  cycle: 36, table: 36, roadmap: 36,
 }
 const defaultBodySizes: Record<string, number> = {
   title: 24, 'key-point': 20, chart: 18,
   'grid-item': 18, sequence: 18, compare: 18,
   funnel: 18, concentric: 18, 'hub-spoke': 18, venn: 18,
+  cycle: 18, table: 18, roadmap: 18,
 }
 const defaultTitleColors: Record<string, string> = Object.fromEntries(
-  ['title', 'key-point', 'chart', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn'].map(k => [k, colors.textPrimary])
+  ['title', 'key-point', 'chart', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap'].map(k => [k, colors.textPrimary])
 )
 const defaultTextColors: Record<string, string> = {
   title: colors.textSecondary, 'key-point': colors.textSecondary, chart: colors.textSecondary,
   'grid-item': '#ffffff', sequence: '#ffffff', compare: colors.textSecondary,
   funnel: '#ffffff', concentric: colors.textPrimary, 'hub-spoke': '#ffffff', venn: colors.textPrimary,
+  cycle: colors.textPrimary, table: colors.textPrimary, roadmap: colors.textPrimary,
 }
 
 export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEditorProps) {
@@ -326,6 +329,15 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
 
     case 'venn':
       return <VennEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'cycle':
+      return <CycleEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'table':
+      return <TableEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'roadmap':
+      return <RoadmapEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
   }
 }
 
@@ -937,6 +949,101 @@ function VennEditor({ data, onChange, commonFields, fontSizeFields, colorFields 
             <div className="space-y-1">
               <TextInput label="标签" value={set.label} onChange={(v) => update({ ...set, label: v })} />
               <TextInput label="描述" value={set.description ?? ''} onChange={(v) => update({ ...set, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function CycleEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: CycleSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      <Section title="循环步骤">
+        <ArrayEditor
+          items={data.steps}
+          onChange={(steps) => onChange({ ...data, steps })}
+          createDefault={() => ({ label: '新步骤', description: '' })}
+          renderRow={(step, _, update) => (
+            <div className="space-y-1">
+              <TextInput label="标签" value={step.label} onChange={(v) => update({ ...step, label: v })} />
+              <TextInput label="描述" value={step.description ?? ''} onChange={(v) => update({ ...step, description: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function TableEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: TableSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      <Section title="表头">
+        <TextInput
+          label="列头 (逗号分隔)"
+          value={data.headers.join(', ')}
+          onChange={(v) => onChange({ ...data, headers: v.split(',').map(s => s.trim()).filter(Boolean) })}
+        />
+      </Section>
+      <Section title="行数据">
+        <ArrayEditor
+          items={data.rows}
+          onChange={(rows) => onChange({ ...data, rows })}
+          createDefault={() => ({ cells: data.headers.map(() => ''), highlight: false })}
+          renderRow={(row, _, update) => (
+            <div className="space-y-1">
+              <TextInput
+                label="单元格 (逗号分隔)"
+                value={row.cells.join(', ')}
+                onChange={(v) => update({ ...row, cells: v.split(',').map(s => s.trim()) })}
+              />
+              <CheckboxInput label="高亮行" value={row.highlight ?? false} onChange={(v) => update({ ...row, highlight: v })} />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function RoadmapEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: RoadmapSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      <Section title="阶段">
+        <ArrayEditor
+          items={data.phases}
+          onChange={(phases) => onChange({ ...data, phases })}
+          createDefault={() => ({ label: '新阶段', items: [{ label: '任务', status: 'pending' as const }] })}
+          renderRow={(phase, _, update) => (
+            <div className="space-y-1">
+              <TextInput label="阶段名称" value={phase.label} onChange={(v) => update({ ...phase, label: v })} />
+              <ArrayEditor
+                items={phase.items}
+                onChange={(items) => update({ ...phase, items })}
+                createDefault={() => ({ label: '新任务', status: 'pending' as const })}
+                renderRow={(item, __, updateItem) => (
+                  <div className="flex gap-1">
+                    <div className="flex-1">
+                      <TextInput label="任务" value={item.label} onChange={(v) => updateItem({ ...item, label: v })} />
+                    </div>
+                    <div className="w-20">
+                      <SelectInput label="状态" value={item.status ?? 'pending'} options={['done', 'active', 'pending']} onChange={(v) => updateItem({ ...item, status: v })} />
+                    </div>
+                  </div>
+                )}
+                label="任务"
+              />
             </div>
           )}
         />

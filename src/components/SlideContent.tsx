@@ -10,6 +10,9 @@ import FunnelPyramidEngine from './engines/FunnelPyramidEngine'
 import ConcentricEngine from './engines/ConcentricEngine'
 import HubSpokeEngine from './engines/HubSpokeEngine'
 import VennEngine from './engines/VennEngine'
+import CycleEngine from './engines/CycleEngine'
+import TableEngine from './engines/TableEngine'
+import RoadmapEngine from './engines/RoadmapEngine'
 import BlockSlideRenderer from './blocks/BlockSlideRenderer'
 
 export default function SlideContent({ data, slideIndex }: { data: SlideData; slideIndex?: number }) {
@@ -24,6 +27,9 @@ export default function SlideContent({ data, slideIndex }: { data: SlideData; sl
     case 'concentric': return <ConcentricEngine {...data} />
     case 'hub-spoke': return <HubSpokeEngine {...data} />
     case 'venn': return <VennEngine {...data} />
+    case 'cycle': return <CycleEngine {...data} />
+    case 'table': return <TableEngine {...data} />
+    case 'roadmap': return <RoadmapEngine {...data} />
     case 'block-slide': return <BlockSlideRenderer data={data} slideIndex={slideIndex ?? 0} />
   }
 }

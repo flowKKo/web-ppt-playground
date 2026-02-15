@@ -265,6 +265,75 @@ export interface VennSlideData {
   colorPalette?: string
 }
 
+// ─── 12. Cycle Engine ───
+export type CycleVariant = 'circular' | 'gear' | 'loop'
+
+export interface CycleStep {
+  label: string
+  description?: string
+}
+
+export interface CycleSlideData {
+  type: 'cycle'
+  title: string
+  body?: string
+  steps: CycleStep[]
+  variant: CycleVariant
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
+// ─── 13. Table Engine ───
+export type TableVariant = 'striped' | 'bordered' | 'highlight'
+
+export interface TableRow {
+  cells: string[]
+  highlight?: boolean
+}
+
+export interface TableSlideData {
+  type: 'table'
+  title: string
+  body?: string
+  headers: string[]
+  rows: TableRow[]
+  variant: TableVariant
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
+// ─── 14. Roadmap Engine ───
+export type RoadmapVariant = 'horizontal' | 'vertical' | 'milestone'
+
+export interface RoadmapItem {
+  label: string
+  status?: 'done' | 'active' | 'pending'
+}
+
+export interface RoadmapPhase {
+  label: string
+  items: RoadmapItem[]
+}
+
+export interface RoadmapSlideData {
+  type: 'roadmap'
+  title: string
+  body?: string
+  phases: RoadmapPhase[]
+  variant: RoadmapVariant
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
 // ─── Union ───
 export type SlideData =
   | TitleSlideData
@@ -277,6 +346,9 @@ export type SlideData =
   | ConcentricSlideData
   | HubSpokeSlideData
   | VennSlideData
+  | CycleSlideData
+  | TableSlideData
+  | RoadmapSlideData
   | BlockSlideData
 
 // ─── Block Model ───
@@ -291,6 +363,9 @@ export type BlockData =
   | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant; textColor?: string; colorPalette?: string }
   | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant; textColor?: string; colorPalette?: string }
   | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; waterfallItems?: WaterfallItem[]; comboSeries?: ComboSeries[]; scatterSeries?: ScatterSeries[]; scatterXAxis?: string; scatterYAxis?: string; gaugeData?: GaugeData; treemapData?: TreemapNode[]; sankeyNodes?: SankeyNode[]; sankeyLinks?: SankeyLink[]; heatmapYCategories?: string[]; heatmapData?: [number, number, number][]; sunburstData?: SunburstNode[]; boxplotItems?: BoxplotItem[]; ganttTasks?: GanttTask[]; highlight?: string; colorPalette?: string }
+  | { type: 'cycle'; steps: CycleStep[]; variant: CycleVariant; textColor?: string; colorPalette?: string }
+  | { type: 'table'; headers: string[]; rows: TableRow[]; variant: TableVariant; textColor?: string; colorPalette?: string }
+  | { type: 'roadmap'; phases: RoadmapPhase[]; variant: RoadmapVariant; textColor?: string; colorPalette?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 export interface ContentBlock {

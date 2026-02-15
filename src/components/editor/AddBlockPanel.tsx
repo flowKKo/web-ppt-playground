@@ -26,6 +26,9 @@ const BLOCK_OPTIONS: BlockOption[] = [
   { label: '同心圆', category: '图解', createData: () => ({ type: 'concentric', rings: [{ label: '核心' }, { label: '中层' }, { label: '外层' }], variant: 'circles' }) },
   { label: '轮辐', category: '图解', createData: () => ({ type: 'hub-spoke', center: { label: '核心' }, spokes: [{ label: '节点一' }, { label: '节点二' }, { label: '节点三' }], variant: 'orbit' }) },
   { label: '韦恩', category: '图解', createData: () => ({ type: 'venn', sets: [{ label: '集合A' }, { label: '集合B' }], variant: 'classic' }) },
+  { label: '循环', category: '图解', createData: () => ({ type: 'cycle', steps: [{ label: '计划' }, { label: '执行' }, { label: '检查' }, { label: '改进' }], variant: 'circular' }) },
+  { label: '表格', category: '图解', createData: () => ({ type: 'table', headers: ['项目', '状态', '进度'], rows: [{ cells: ['任务A', '进行中', '60%'] }, { cells: ['任务B', '已完成', '100%'], highlight: true }, { cells: ['任务C', '待开始', '0%'] }], variant: 'striped' }) },
+  { label: '路线图', category: '图解', createData: () => ({ type: 'roadmap', phases: [{ label: 'Q1', items: [{ label: '需求分析', status: 'done' }, { label: '设计', status: 'done' }] }, { label: 'Q2', items: [{ label: '开发', status: 'active' }, { label: '测试', status: 'pending' }] }, { label: 'Q3', items: [{ label: '上线', status: 'pending' }] }], variant: 'horizontal' }) },
   // Charts
   { label: '柱状图', category: '图表', createData: () => ({ type: 'chart', chartType: 'bar', bars: [{ category: 'Q1', values: [{ name: '值', value: 45 }] }, { category: 'Q2', values: [{ name: '值', value: 62 }] }, { category: 'Q3', values: [{ name: '值', value: 38 }] }] }) },
   { label: '饼图', category: '图表', createData: () => ({ type: 'chart', chartType: 'pie', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }] }) },

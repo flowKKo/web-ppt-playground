@@ -26,7 +26,7 @@ Use the `/web-ppt` skill to generate or update slides:
 
 ## Architecture
 
-### Slide Types (11 types — discriminated union in `src/data/types.ts`)
+### Slide Types (14 types — discriminated union in `src/data/types.ts`)
 
 | Type | Description | Variants |
 |------|-------------|----------|
@@ -40,9 +40,12 @@ Use the `/web-ppt` skill to generate or update slides:
 | `concentric` | Concentric ring diagrams | 3 variants (circles, diamond, target) |
 | `hub-spoke` | Hub and spoke layouts | 3 variants (orbit, solar, pinwheel) |
 | `venn` | Venn diagrams | 3 variants (classic, linear, linear-filled) |
+| `cycle` | Circular process diagrams | 3 variants (circular, gear, loop) |
+| `table` | Table/matrix layouts | 3 variants (striped, bordered, highlight) |
+| `roadmap` | Multi-track timelines | 3 variants (horizontal, vertical, milestone) |
 | `block-slide` | Free-layout canvas with positioned `ContentBlock[]` | — |
 
-### Engine Architecture (7 engines)
+### Engine Architecture (10 engines)
 
 Each engine renders a specific diagram type and exports both a full-slide component (`*Engine`) and a headless diagram function (`*Diagram`) for use in blocks:
 
@@ -53,10 +56,13 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `ConcentricEngine` / `ConcentricDiagram`
 - `HubSpokeEngine` / `HubSpokeDiagram`
 - `VennEngine` / `VennDiagram`
+- `CycleEngine` / `CycleDiagram`
+- `TableEngine` / `TableDiagram`
+- `RoadmapEngine` / `RoadmapDiagram`
 
 ### Block Model
 
-`BlockSlideData` contains `ContentBlock[]`, each block has `id/x/y/width/height` (percentage-based) + `BlockData` (9 types: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart).
+`BlockSlideData` contains `ContentBlock[]`, each block has `id/x/y/width/height` (percentage-based) + `BlockData` (12 types: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, chart).
 
 ### Editor System
 
@@ -98,7 +104,7 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `src/components/slides/` — TitleSlide, KeyPointSlide, ChartSlide
 
 ### Engines
-- `src/components/engines/*.tsx` — 7 diagram engines
+- `src/components/engines/*.tsx` — 10 diagram engines
 - `src/components/engines/shared/` — EngineTitle, ConnectorArrow
 
 ### Block System

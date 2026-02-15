@@ -10,6 +10,9 @@ import { FunnelDiagram } from '../engines/FunnelPyramidEngine'
 import { ConcentricDiagram } from '../engines/ConcentricEngine'
 import { HubSpokeDiagram } from '../engines/HubSpokeEngine'
 import { VennDiagram } from '../engines/VennEngine'
+import { CycleDiagram } from '../engines/CycleEngine'
+import { TableDiagram } from '../engines/TableEngine'
+import { RoadmapDiagram } from '../engines/RoadmapEngine'
 import { ChartDiagram } from '../slides/ChartSlide'
 
 interface BlockRendererProps {
@@ -112,6 +115,12 @@ export default function BlockRenderer({ data, blockId, slideIndex }: BlockRender
       return <DiagramWrapper><HubSpokeDiagram center={data.center} spokes={data.spokes} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'venn':
       return <DiagramWrapper><VennDiagram sets={data.sets} variant={data.variant} intersectionLabel={data.intersectionLabel} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'cycle':
+      return <DiagramWrapper><CycleDiagram steps={data.steps} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'table':
+      return <DiagramWrapper><TableDiagram headers={data.headers} rows={data.rows} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'roadmap':
+      return <DiagramWrapper><RoadmapDiagram phases={data.phases} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'chart':
       return (
         <DiagramWrapper>

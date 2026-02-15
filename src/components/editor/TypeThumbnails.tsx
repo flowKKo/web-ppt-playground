@@ -127,6 +127,53 @@ function VennThumb({ active }: ThumbnailProps) {
   )
 }
 
+function CycleThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  const r = 14
+  const cx = 40, cy = 22
+  const pts = [0, 1, 2, 3].map(i => {
+    const a = -Math.PI / 2 + (Math.PI * 2 * i) / 4
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)]
+  })
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      {pts.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="5" fill={c} opacity={0.3 + i * 0.2} stroke={c} strokeWidth="1" />
+      ))}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={c} strokeWidth="1" strokeDasharray="3 2" opacity={0.3} />
+    </svg>
+  )
+}
+
+function TableThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <rect x="12" y="8" width="56" height="6" rx="1" fill={c} opacity={0.7} />
+      <rect x="12" y="16" width="56" height="5" rx="1" fill={c} opacity={0.15} />
+      <rect x="12" y="23" width="56" height="5" rx="1" fill={c} opacity={0.25} />
+      <rect x="12" y="30" width="56" height="5" rx="1" fill={c} opacity={0.15} />
+      <line x1="32" y1="8" x2="32" y2="35" stroke={c} strokeWidth="0.8" opacity={0.3} />
+      <line x1="52" y1="8" x2="52" y2="35" stroke={c} strokeWidth="0.8" opacity={0.3} />
+    </svg>
+  )
+}
+
+function RoadmapThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <line x1="12" y1="22" x2="68" y2="22" stroke={c} strokeWidth="1.5" opacity={0.3} />
+      <polygon points="20,18 24,22 20,26" fill={c} opacity={0.5} />
+      <polygon points="38,18 42,22 38,26" fill={c} opacity={0.7} />
+      <polygon points="56,18 60,22 56,26" fill={c} opacity={0.9} />
+      <rect x="14" y="28" width="14" height="3" rx="1" fill={c} opacity={0.3} />
+      <rect x="33" y="28" width="14" height="3" rx="1" fill={c} opacity={0.3} />
+      <rect x="52" y="28" width="14" height="3" rx="1" fill={c} opacity={0.3} />
+    </svg>
+  )
+}
+
 // ─── Registry ───
 
 export type SlideType = SlideData['type']
@@ -148,6 +195,9 @@ export const TYPE_LIST: TypeMeta[] = [
   { type: 'concentric', label: '同心圆', Thumb: ConcentricThumb },
   { type: 'hub-spoke', label: '轮辐', Thumb: HubSpokeThumb },
   { type: 'venn', label: '韦恩', Thumb: VennThumb },
+  { type: 'cycle', label: '循环', Thumb: CycleThumb },
+  { type: 'table', label: '表格', Thumb: TableThumb },
+  { type: 'roadmap', label: '路线图', Thumb: RoadmapThumb },
 ]
 
 export function TypeThumbnail({ type, active }: { type: SlideType; active?: boolean }) {

@@ -32,6 +32,12 @@ function blockToSlideData(data: BlockData): SlideData | null {
       return { ...data, title: '' }
     case 'venn':
       return { ...data, title: '' }
+    case 'cycle':
+      return { ...data, title: '' }
+    case 'table':
+      return { ...data, title: '' }
+    case 'roadmap':
+      return { ...data, title: '' }
     case 'chart':
       return { ...data, title: '' }
   }
@@ -54,6 +60,12 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
       return { type: 'hub-spoke', center: slideData.center, spokes: slideData.spokes, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'venn':
       return { type: 'venn', sets: slideData.sets, variant: slideData.variant, intersectionLabel: slideData.intersectionLabel, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'cycle':
+      return { type: 'cycle', steps: slideData.steps, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'table':
+      return { type: 'table', headers: slideData.headers, rows: slideData.rows, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'roadmap':
+      return { type: 'roadmap', phases: slideData.phases, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'chart':
       return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight, colorPalette: slideData.colorPalette }
     default:

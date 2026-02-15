@@ -92,6 +92,15 @@ function extractDiagramData(data: SlideData): BlockData | null {
     case 'venn':
       return { type: 'venn', sets: data.sets, variant: data.variant, intersectionLabel: data.intersectionLabel }
 
+    case 'cycle':
+      return { type: 'cycle', steps: data.steps, variant: data.variant }
+
+    case 'table':
+      return { type: 'table', headers: data.headers, rows: data.rows, variant: data.variant }
+
+    case 'roadmap':
+      return { type: 'roadmap', phases: data.phases, variant: data.variant }
+
     case 'chart':
       return {
         type: 'chart', chartType: data.chartType,

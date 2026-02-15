@@ -1,8 +1,9 @@
 import type {
   SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData,
   CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData,
-  VennSlideData, ChartType, GridItemVariant, SequenceVariant, FunnelVariant,
-  ConcentricVariant, HubSpokeVariant, VennVariant,
+  VennSlideData, CycleSlideData, TableSlideData, RoadmapSlideData,
+  ChartType, GridItemVariant, SequenceVariant, FunnelVariant,
+  ConcentricVariant, HubSpokeVariant, VennVariant, CycleVariant, TableVariant, RoadmapVariant,
 } from './types'
 
 // ─── Common intermediate representation ───
@@ -78,6 +79,24 @@ export function extractCommonItems(data: SlideData): CommonSlideData {
       return {
         ...base,
         items: data.sets.map((s) => ({ name: s.label, description: s.description })),
+      }
+
+    case 'cycle':
+      return {
+        ...base,
+        items: data.steps.map((s) => ({ name: s.label, description: s.description })),
+      }
+
+    case 'table':
+      return {
+        ...base,
+        items: data.rows.map((r) => ({ name: r.cells[0] ?? '', description: r.cells.slice(1).join(', ') })),
+      }
+
+    case 'roadmap':
+      return {
+        ...base,
+        items: data.phases.map((p) => ({ name: p.label, description: p.items.map(i => i.label).join(', ') })),
       }
 
     case 'block-slide':
@@ -210,6 +229,9 @@ function applyVariant(data: SlideData, variant?: string): SlideData {
     case 'concentric': return { ...data, variant: variant as ConcentricVariant }
     case 'hub-spoke': return { ...data, variant: variant as HubSpokeVariant }
     case 'venn': return { ...data, variant: variant as VennVariant }
+    case 'cycle': return { ...data, variant: variant as CycleVariant }
+    case 'table': return { ...data, variant: variant as TableVariant }
+    case 'roadmap': return { ...data, variant: variant as RoadmapVariant }
     case 'chart': return { ...data, chartType: variant as ChartType }
     default: return data
   }
@@ -273,6 +295,28 @@ function buildTarget(
         type: 'venn', title, body,
         sets: items.slice(0, 4).map((i) => ({ label: i.name, description: i.description })),
         variant: (variant as VennVariant) ?? 'classic',
+      }
+
+    case 'cycle':
+      return {
+        type: 'cycle', title, body,
+        steps: items.map((i) => ({ label: i.name, description: i.description })),
+        variant: (variant as CycleVariant) ?? 'circular',
+      }
+
+    case 'table':
+      return {
+        type: 'table', title, body,
+        headers: ['名称', '详情'],
+        rows: items.map((i) => ({ cells: [i.name, i.description ?? String(i.value ?? '')] })),
+        variant: (variant as TableVariant) ?? 'striped',
+      }
+
+    case 'roadmap':
+      return {
+        type: 'roadmap', title, body,
+        phases: items.map((i) => ({ label: i.name, items: [{ label: i.description ?? '任务', status: 'pending' as const }] })),
+        variant: (variant as RoadmapVariant) ?? 'horizontal',
       }
 
     case 'block-slide':
@@ -542,6 +586,38 @@ export function createDefaultSlide(type: SlideData['type']): SlideData {
         intersectionLabel: '交集',
       }
 
+    case 'cycle':
+      return {
+        type: 'cycle', title: 'PDCA 循环', variant: 'circular',
+        steps: [
+          { label: '计划', description: '制定目标' },
+          { label: '执行', description: '落地实施' },
+          { label: '检查', description: '评估结果' },
+          { label: '改进', description: '持续优化' },
+        ],
+      }
+
+    case 'table':
+      return {
+        type: 'table', title: '数据总览', variant: 'striped',
+        headers: ['项目', '负责人', '状态', '进度'],
+        rows: [
+          { cells: ['前端重构', '张三', '进行中', '65%'] },
+          { cells: ['API 升级', '李四', '已完成', '100%'], highlight: true },
+          { cells: ['性能优化', '王五', '待开始', '0%'] },
+        ],
+      }
+
+    case 'roadmap':
+      return {
+        type: 'roadmap', title: '产品路线图', variant: 'horizontal',
+        phases: [
+          { label: 'Q1', items: [{ label: '需求调研', status: 'done' }, { label: '原型设计', status: 'done' }] },
+          { label: 'Q2', items: [{ label: '核心开发', status: 'active' }, { label: '单元测试', status: 'pending' }] },
+          { label: 'Q3', items: [{ label: '集成测试', status: 'pending' }, { label: '灰度发布', status: 'pending' }] },
+        ],
+      }
+
     case 'block-slide':
       return {
         type: 'block-slide', title: '新页面',
@@ -620,6 +696,9 @@ function getVariant(data: SlideData): string | undefined {
     case 'concentric': return data.variant
     case 'hub-spoke': return data.variant
     case 'venn': return data.variant
+    case 'cycle': return data.variant
+    case 'table': return data.variant
+    case 'roadmap': return data.variant
     case 'chart': return data.chartType
     default: return undefined
   }

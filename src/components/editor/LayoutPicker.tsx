@@ -79,6 +79,30 @@ const VARIANT_OPTIONS: Partial<Record<SlideType, { field: string; options: { val
       { value: 'linear-filled', label: '填充线性' },
     ],
   },
+  'cycle': {
+    field: 'variant',
+    options: [
+      { value: 'circular', label: '圆形' },
+      { value: 'gear', label: '齿轮' },
+      { value: 'loop', label: '环形' },
+    ],
+  },
+  'table': {
+    field: 'variant',
+    options: [
+      { value: 'striped', label: '条纹' },
+      { value: 'bordered', label: '边框' },
+      { value: 'highlight', label: '高亮' },
+    ],
+  },
+  'roadmap': {
+    field: 'variant',
+    options: [
+      { value: 'horizontal', label: '水平' },
+      { value: 'vertical', label: '垂直' },
+      { value: 'milestone', label: '里程碑' },
+    ],
+  },
   'chart': {
     field: 'chartType',
     options: [
@@ -115,6 +139,9 @@ function getCurrentVariant(data: SlideData): string | undefined {
     case 'concentric': return data.variant
     case 'hub-spoke': return data.variant
     case 'venn': return data.variant
+    case 'cycle': return data.variant
+    case 'table': return data.variant
+    case 'roadmap': return data.variant
     case 'chart': return data.chartType
     default: return undefined
   }
