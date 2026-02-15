@@ -1,8 +1,12 @@
-# Presenta
+<div align="center"><a name="readme-top"></a>
 
-[中文文档](./README.zh-CN.md) | [Website (EN)](https://www.presenta.help/en/) | [官网 (中文)](https://www.presenta.help/zh/)
+[![Presenta](docs/images/banner.svg)](https://www.presenta.help/en/)
 
-A web-based presentation editor and viewer with WYSIWYG editing, rich diagram support, and AI-powered slide generation.
+Create beautiful presentations with diagrams, charts, and AI — right in your browser.
+
+**English** · [简体中文](README.zh-CN.md) · [Official Website](https://www.presenta.help/en/) · [官网](https://www.presenta.help/zh/)
+
+</div>
 
 ## Features
 

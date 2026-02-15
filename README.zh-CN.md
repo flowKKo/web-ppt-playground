@@ -1,8 +1,12 @@
-# Presenta
+<div align="center"><a name="readme-top"></a>
 
-[English](./README.md) | [Website (EN)](https://www.presenta.help/en/) | [官网 (中文)](https://www.presenta.help/zh/)
+[![Presenta](docs/images/banner.svg)](https://www.presenta.help/zh/)
 
-基于 Web 的演示文稿编辑器与播放器，支持所见即所得编辑、丰富的图表引擎，以及 AI 驱动的幻灯片生成。
+在浏览器中创建精美演示文稿 — 图表、图解、AI 一站搞定。
+
+[English](README.md) · **简体中文** · [Official Website](https://www.presenta.help/en/) · [官网](https://www.presenta.help/zh/)
+
+</div>
 
 ## 特性
 

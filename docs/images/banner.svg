@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5F0"/>
+      <stop offset="100%" style="stop-color:#EEEEE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="url(#bg)"/>
+  <!-- Decorative slide icons -->
+  <g opacity="0.08">
+    <rect x="40" y="50" width="96" height="54" rx="4" fill="#546E7A"/>
+    <rect x="50" y="110" width="96" height="54" rx="4" fill="#4CAF50"/>
+    <rect x="664" y="50" width="96" height="54" rx="4" fill="#E57373"/>
+    <rect x="654" y="110" width="96" height="54" rx="4" fill="#42A5F5"/>
+  </g>
+  <!-- Logo text -->
+  <text x="400" y="95" text-anchor="middle" font-family="system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="52" font-weight="700" fill="#333333" letter-spacing="2">Presenta</text>
+  <!-- Tagline -->
+  <text x="400" y="135" text-anchor="middle" font-family="system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" fill="#757575" letter-spacing="1">Web-based Presentation Editor</text>
+  <!-- Accent line -->
+  <rect x="340" y="150" width="120" height="3" rx="1.5" fill="#546E7A"/>
+</svg>
