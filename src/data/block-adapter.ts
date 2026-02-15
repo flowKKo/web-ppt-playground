@@ -101,14 +101,10 @@ function extractDiagramData(data: SlideData): BlockData | null {
     case 'roadmap':
       return { type: 'roadmap', phases: data.phases, variant: data.variant }
 
-    case 'chart':
-      return {
-        type: 'chart', chartType: data.chartType,
-        bars: data.bars, slices: data.slices, innerRadius: data.innerRadius,
-        categories: data.categories, lineSeries: data.lineSeries,
-        indicators: data.indicators, radarSeries: data.radarSeries,
-        highlight: data.highlight,
-      }
+    case 'chart': {
+      const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = data
+      return { type: 'chart' as const, ...chartData }
+    }
 
     case 'block-slide':
       return null

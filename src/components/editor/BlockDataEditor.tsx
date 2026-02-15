@@ -66,8 +66,10 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
       return { type: 'table', headers: slideData.headers, rows: slideData.rows, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'roadmap':
       return { type: 'roadmap', phases: slideData.phases, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
-    case 'chart':
-      return { type: 'chart', chartType: slideData.chartType, bars: slideData.bars, slices: slideData.slices, innerRadius: slideData.innerRadius, categories: slideData.categories, lineSeries: slideData.lineSeries, indicators: slideData.indicators, radarSeries: slideData.radarSeries, highlight: slideData.highlight, colorPalette: slideData.colorPalette }
+    case 'chart': {
+      const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = slideData
+      return { type: 'chart' as const, ...chartData }
+    }
     default:
       // Should not happen, but return original
       return { type: 'title-body', title: '', body: '' }
