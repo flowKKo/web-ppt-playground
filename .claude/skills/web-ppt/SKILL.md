@@ -917,6 +917,9 @@ Every slide must contain **real data from the source document**:
 | `cycle` | 3-8 steps |
 | `table` | 2-6 columns, 2-10 rows |
 | `roadmap` | 2-6 phases, 1-5 items per phase |
+| `swot` | 1-3 items per quadrant (strengths, weaknesses, opportunities, threats) |
+| `mindmap` | 1 root + 3-6 main branches, 0-3 sub-branches each |
+| `stack` | 3-5 layers with labels |
 
 ### Density ↔ Size Strategy
 
