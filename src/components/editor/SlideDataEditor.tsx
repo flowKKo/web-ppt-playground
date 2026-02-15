@@ -481,6 +481,106 @@ function ChartEditor({ data, onChange, isBlock, fontSizeFields, colorFields }: {
           />
         </Section>
       )}
+
+      {data.chartType === 'waterfall' && (
+        <Section title="瀑布图数据">
+          <ArrayEditor
+            items={data.waterfallItems ?? []}
+            onChange={(waterfallItems) => onChange({ ...data, waterfallItems })}
+            createDefault={() => ({ name: '新项', value: 50, type: 'increase' as const })}
+            renderRow={(item, _, update) => (
+              <div className="flex gap-1">
+                <div className="flex-1">
+                  <TextInput label="名称" value={item.name} onChange={(v) => update({ ...item, name: v })} />
+                </div>
+                <div className="w-16">
+                  <NumberInput label="值" value={item.value} onChange={(v) => update({ ...item, value: v })} />
+                </div>
+                <div className="w-20">
+                  <SelectInput label="类型" value={item.type ?? 'increase'} options={['increase', 'decrease', 'total']} onChange={(v) => update({ ...item, type: v })} />
+                </div>
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'combo' && (
+        <Section title="组合图数据">
+          <TextInput
+            label="X轴类别 (逗号分隔)"
+            value={(data.categories ?? []).join(', ')}
+            onChange={(v) => onChange({ ...data, categories: v.split(',').map((s) => s.trim()) })}
+          />
+          <ArrayEditor
+            items={data.comboSeries ?? []}
+            onChange={(comboSeries) => onChange({ ...data, comboSeries })}
+            createDefault={() => ({ name: '系列', data: [0], seriesType: 'bar' as const })}
+            renderRow={(series, _, update) => (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  <div className="flex-1">
+                    <TextInput label="名称" value={series.name} onChange={(v) => update({ ...series, name: v })} />
+                  </div>
+                  <div className="w-16">
+                    <SelectInput label="类型" value={series.seriesType} options={['bar', 'line']} onChange={(v) => update({ ...series, seriesType: v })} />
+                  </div>
+                  <div className="w-16">
+                    <SelectInput label="Y轴" value={String(series.yAxisIndex ?? 0)} options={['0', '1']} onChange={(v) => update({ ...series, yAxisIndex: Number(v) as 0 | 1 })} />
+                  </div>
+                </div>
+                <TextInput
+                  label="数据 (逗号分隔)"
+                  value={series.data.join(', ')}
+                  onChange={(v) => update({ ...series, data: v.split(',').map((s) => Number(s.trim()) || 0) })}
+                />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'scatter' && (
+        <Section title="散点图数据">
+          <div className="flex gap-1">
+            <div className="flex-1">
+              <TextInput label="X轴名称" value={data.scatterXAxis ?? ''} onChange={(v) => onChange({ ...data, scatterXAxis: v })} />
+            </div>
+            <div className="flex-1">
+              <TextInput label="Y轴名称" value={data.scatterYAxis ?? ''} onChange={(v) => onChange({ ...data, scatterYAxis: v })} />
+            </div>
+          </div>
+          <ArrayEditor
+            items={data.scatterSeries ?? []}
+            onChange={(scatterSeries) => onChange({ ...data, scatterSeries })}
+            createDefault={() => ({ name: '系列', data: [[50, 50]] as [number, number][] })}
+            renderRow={(series, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="名称" value={series.name} onChange={(v) => update({ ...series, name: v })} />
+                <TextInput
+                  label="数据点 (x,y 每组用分号分隔)"
+                  value={series.data.map((d) => d.slice(0, 2).join(',')).join('; ')}
+                  onChange={(v) => update({
+                    ...series,
+                    data: v.split(';').map((pair) => {
+                      const [x, y] = pair.split(',').map((s) => Number(s.trim()) || 0)
+                      return [x, y] as [number, number]
+                    }),
+                  })}
+                />
+              </div>
+            )}
+          />
+        </Section>
+      )}
+
+      {data.chartType === 'gauge' && (
+        <Section title="仪表盘数据">
+          <NumberInput label="当前值" value={data.gaugeData?.value ?? 0} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, value: v } })} />
+          <NumberInput label="最大值" value={data.gaugeData?.max ?? 100} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, max: v } })} />
+          <TextInput label="名称" value={data.gaugeData?.name ?? ''} onChange={(v) => onChange({ ...data, gaugeData: { ...data.gaugeData!, name: v } })} />
+        </Section>
+      )}
     </div>
   )
 }

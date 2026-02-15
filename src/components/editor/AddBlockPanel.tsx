@@ -37,6 +37,10 @@ const BLOCK_OPTIONS: BlockOption[] = [
   { label: '堆叠柱状', category: '图表', createData: () => ({ type: 'chart', chartType: 'stacked-bar', bars: [{ category: 'Q1', values: [{ name: '产品A', value: 30 }, { name: '产品B', value: 20 }] }, { category: 'Q2', values: [{ name: '产品A', value: 45 }, { name: '产品B', value: 25 }] }, { category: 'Q3', values: [{ name: '产品A', value: 38 }, { name: '产品B', value: 32 }] }] }) },
   { label: '面积图', category: '图表', createData: () => ({ type: 'chart', chartType: 'area', categories: ['一月', '二月', '三月', '四月'], lineSeries: [{ name: '数据', data: [30, 45, 60, 72] }] }) },
   { label: '玫瑰图', category: '图表', createData: () => ({ type: 'chart', chartType: 'rose', slices: [{ name: '项目A', value: 40 }, { name: '项目B', value: 35 }, { name: '项目C', value: 25 }, { name: '项目D', value: 18 }] }) },
+  { label: '瀑布图', category: '图表', createData: () => ({ type: 'chart', chartType: 'waterfall', waterfallItems: [{ name: '收入', value: 100, type: 'total' }, { name: '成本', value: -30, type: 'decrease' }, { name: '运营', value: -20, type: 'decrease' }, { name: '利润', value: 50, type: 'total' }] }) },
+  { label: '组合图', category: '图表', createData: () => ({ type: 'chart', chartType: 'combo', categories: ['Q1', 'Q2', 'Q3', 'Q4'], comboSeries: [{ name: '收入', data: [120, 150, 180, 210], seriesType: 'bar' }, { name: '增长率', data: [15, 25, 20, 17], seriesType: 'line', yAxisIndex: 1 }] }) },
+  { label: '散点图', category: '图表', createData: () => ({ type: 'chart', chartType: 'scatter', scatterSeries: [{ name: '数据', data: [[10, 20], [30, 50], [50, 40], [70, 80], [90, 60]] }], scatterXAxis: 'X轴', scatterYAxis: 'Y轴' }) },
+  { label: '仪表盘', category: '图表', createData: () => ({ type: 'chart', chartType: 'gauge', gaugeData: { value: 72, max: 100, name: '完成率' } }) },
   // Media
   { label: '图片', category: '媒体', createData: () => ({ type: 'image', placeholder: '点击添加图片' }) },
 ]

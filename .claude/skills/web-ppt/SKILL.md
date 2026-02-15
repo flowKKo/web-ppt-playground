@@ -50,7 +50,7 @@ Script (slides.md)
 | `src/data/decks/index.ts` | Auto-discovery registry via `import.meta.glob` (no manual registration) |
 | `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
 | `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
-| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, horizontal-bar, pie, donut, line, radar, proportion) |
+| `src/components/slides/ChartSlide.tsx` | ECharts renderer (bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion, waterfall, combo, scatter, gauge) |
 | `src/components/blocks/` | Block model: BlockRenderer, BlockSlideRenderer, BlockWrapper |
 
 ---
@@ -95,12 +95,12 @@ Large centered statement with optional body text. Use for core takeaways, quotes
 
 #### 3. `chart` — Data Visualization (ECharts)
 
-Full-width chart with title. **10 chart sub-types:**
+Full-width chart with title. **14 chart sub-types:**
 
 ```ts
 {
   type: 'chart',
-  chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion',
+  chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge',
   title: string,
   body?: string,
   highlight?: string,    // big number callout (e.g., "¥12.8M")
@@ -118,6 +118,16 @@ Full-width chart with title. **10 chart sub-types:**
   radarSeries?: RadarSeries[],   // { name, values: number[] }
   // proportion:
   proportionItems?: ProportionItem[],  // { name, value, max? }
+  // waterfall:
+  waterfallItems?: WaterfallItem[],    // { name, value, type?: 'increase'|'decrease'|'total' }
+  // combo (dual-axis bar+line):
+  comboSeries?: ComboSeries[],        // { name, data, seriesType: 'bar'|'line', yAxisIndex?: 0|1 }
+  // scatter / bubble:
+  scatterSeries?: ScatterSeries[],    // { name, data: [x,y,size?][] }
+  scatterXAxis?: string,
+  scatterYAxis?: string,
+  // gauge:
+  gaugeData?: GaugeData,              // { value, max?, name? }
 }
 ```
 
@@ -135,6 +145,10 @@ Full-width chart with title. **10 chart sub-types:**
 | `area` | Trends with volume emphasis, growth visualization | 4-12 time points, 1-3 series (filled) |
 | `radar` | Multi-dimensional comparison, capability profiles | 4-6 dimensions, 2-3 items compared |
 | `proportion` | Completion rates, coverage, percentage comparison | 3-8 items with value/max |
+| `waterfall` | Profit decomposition, budget bridge, incremental analysis | 4-8 items (increase/decrease/total) |
+| `combo` | Dual-axis: absolute values (bar) + rates/trends (line) | 3-8 categories, 2-3 series (mixed bar+line) |
+| `scatter` | Correlation, market positioning, BCG matrix | 1-3 series, 5-20 data points each |
+| `gauge` | Single KPI completion, health score, NPS | 1 value with max |
 
 ---
 
@@ -359,7 +373,7 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `concentric` | `{ rings, variant }` |
 | `hub-spoke` | `{ center, spokes, variant }` |
 | `venn` | `{ sets, intersectionLabel?, variant }` |
-| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, highlight? }` |
+| `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, waterfallItems?, comboSeries?, scatterSeries?, scatterXAxis?, scatterYAxis?, gaugeData?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
 **Content-aware block height guide:**
@@ -566,6 +580,10 @@ Slide 7: "用户转化路径"
 | Core + ecosystem | `hub-spoke` (orbit) | Central concept with satellites |
 | Layered architecture | `concentric` (circles) | Nested layers, inside-out |
 | Concept overlap | `venn` (classic) | Shared and unique traits |
+| Profit decomposition, bridge | `chart` (waterfall) | Incremental gains/losses to a total |
+| Dual-axis comparison | `chart` (combo) | Bars for absolute values + line for rates |
+| Correlation / positioning | `chart` (scatter) | Two/three-variable relationship mapping |
+| Single KPI health | `chart` (gauge) | One value against a max target |
 | Mixed content | `block-slide` | Text + diagram on same slide |
 | Sparse content + visual fill | `block-slide` + `image` block | Diagram occupies <60% → add image to balance |
 | Product / UI showcase | `block-slide` + `image` block | Screenshot placeholder + caption or metrics |
@@ -951,13 +969,18 @@ interface KeyPointSlideData {
 }
 
 interface ChartSlideData {
-  type: 'chart'; chartType: 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
+  type: 'chart'; chartType: ChartType
   title: string; body?: string; highlight?: string; chartHeight?: number
   titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
   bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number
   categories?: string[]; lineSeries?: LineSeries[]
   indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]
   proportionItems?: ProportionItem[]  // { name, value, max? }
+  waterfallItems?: WaterfallItem[]    // { name, value, type? }
+  comboSeries?: ComboSeries[]        // { name, data, seriesType, yAxisIndex? }
+  scatterSeries?: ScatterSeries[]    // { name, data: [x,y,size?][] }
+  scatterXAxis?: string; scatterYAxis?: string
+  gaugeData?: GaugeData              // { value, max?, name? }
 }
 
 interface GridItemSlideData {
@@ -1028,6 +1051,10 @@ interface LineSeries { name: string; data: number[]; area?: boolean }
 interface RadarIndicator { name: string; max: number }
 interface RadarSeries { name: string; values: number[] }
 interface ProportionItem { name: string; value: number; max?: number }
+interface WaterfallItem { name: string; value: number; type?: 'increase' | 'decrease' | 'total' }
+interface ComboSeries { name: string; data: number[]; seriesType: 'bar' | 'line'; yAxisIndex?: 0 | 1 }
+interface ScatterSeries { name: string; data: [number, number, number?][] }
+interface GaugeData { value: number; max?: number; name?: string }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
 // BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, chart, image
 // Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
@@ -1039,7 +1066,7 @@ type FunnelVariant = 'funnel' | 'pyramid' | 'slope'
 type ConcentricVariant = 'circles' | 'diamond' | 'target'
 type HubSpokeVariant = 'orbit' | 'solar' | 'pinwheel'
 type VennVariant = 'classic' | 'linear' | 'linear-filled'
-type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
+type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge'
 ```
 
 ---

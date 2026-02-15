@@ -9,7 +9,7 @@ Web-based presentation editor and viewer. Single-page navigation (one slide at a
 - **Vite + React + TypeScript** — component-based slide system
 - **Tailwind CSS** — styling via utility classes + design tokens
 - **Framer Motion** — entrance animations
-- **ECharts + echarts-for-react** — data visualization (bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion)
+- **ECharts + echarts-for-react** — data visualization (bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion, waterfall, combo, scatter, gauge)
 
 ## Usage
 
@@ -32,7 +32,7 @@ Use the `/web-ppt` skill to generate or update slides:
 |------|-------------|----------|
 | `title` | Title + subtitle + badge | — |
 | `key-point` | Key point with body text | — |
-| `chart` | ECharts visualization | bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion |
+| `chart` | ECharts visualization | bar, horizontal-bar, stacked-bar, pie, donut, rose, line, area, radar, proportion, waterfall, combo, scatter, gauge |
 | `grid-item` | Card grid layout | 12 variants (solid, outline, sideline, topline, top-circle, joined, leaf, labeled, alternating, pillar, diamonds, signs) |
 | `sequence` | Step-by-step flow | 7 variants (timeline, chain, arrows, pills, ribbon-arrows, numbered, zigzag) |
 | `compare` | Comparison views | 3 modes (versus, quadrant, iceberg) |
@@ -132,7 +132,7 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `src/data/user-decks/<deck-id>.json` — UI-created/edited deck data
 
 ### Charts & Theme
-- `src/charts/{BarChart,PieChart,LineChart,RadarChart,ProportionChart}.tsx` — ECharts wrappers
+- `src/charts/{BarChart,PieChart,LineChart,RadarChart,ProportionChart,WaterfallChart,ComboChart,ScatterChart,GaugeChart}.tsx` — ECharts wrappers
 - `src/theme/swiss.ts` — colors, cardStyle, motionConfig, echartsTheme, generateGradientColors
 
 ### Hooks

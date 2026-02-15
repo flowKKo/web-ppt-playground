@@ -26,7 +26,7 @@ export interface KeyPointSlideData {
 }
 
 // ─── 3. Chart (expanded) ───
-export type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion'
+export type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge'
 
 export interface ChartBar {
   category: string
@@ -37,6 +37,10 @@ export interface LineSeries { name: string; data: number[]; area?: boolean }
 export interface RadarIndicator { name: string; max: number }
 export interface RadarSeries { name: string; values: number[] }
 export interface ProportionItem { name: string; value: number; max?: number }
+export interface WaterfallItem { name: string; value: number; type?: 'increase' | 'decrease' | 'total' }
+export interface ComboSeries { name: string; data: number[]; seriesType: 'bar' | 'line'; yAxisIndex?: 0 | 1 }
+export interface ScatterSeries { name: string; data: [number, number, number?][] }
+export interface GaugeData { value: number; max?: number; name?: string }
 
 export interface ChartSlideData {
   type: 'chart'
@@ -63,6 +67,16 @@ export interface ChartSlideData {
   radarSeries?: RadarSeries[]
   // proportion
   proportionItems?: ProportionItem[]
+  // waterfall
+  waterfallItems?: WaterfallItem[]
+  // combo
+  comboSeries?: ComboSeries[]
+  // scatter
+  scatterSeries?: ScatterSeries[]
+  scatterXAxis?: string
+  scatterYAxis?: string
+  // gauge
+  gaugeData?: GaugeData
 }
 
 // ─── 4. GridItem Engine ───
@@ -256,7 +270,7 @@ export type BlockData =
   | { type: 'concentric'; rings: ConcentricRing[]; variant: ConcentricVariant; textColor?: string; colorPalette?: string }
   | { type: 'hub-spoke'; center: { label: string; description?: string }; spokes: { label: string; description?: string }[]; variant: HubSpokeVariant; textColor?: string; colorPalette?: string }
   | { type: 'venn'; sets: { label: string; description?: string }[]; intersectionLabel?: string; variant: VennVariant; textColor?: string; colorPalette?: string }
-  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; highlight?: string; colorPalette?: string }
+  | { type: 'chart'; chartType: ChartType; bars?: ChartBar[]; slices?: ChartSlice[]; innerRadius?: number; categories?: string[]; lineSeries?: LineSeries[]; indicators?: RadarIndicator[]; radarSeries?: RadarSeries[]; proportionItems?: ProportionItem[]; waterfallItems?: WaterfallItem[]; comboSeries?: ComboSeries[]; scatterSeries?: ScatterSeries[]; scatterXAxis?: string; scatterYAxis?: string; gaugeData?: GaugeData; highlight?: string; colorPalette?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 export interface ContentBlock {

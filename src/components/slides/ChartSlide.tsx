@@ -7,6 +7,10 @@ import PieChart from '../../charts/PieChart'
 import LineChart from '../../charts/LineChart'
 import RadarChart from '../../charts/RadarChart'
 import ProportionChart from '../../charts/ProportionChart'
+import WaterfallChart from '../../charts/WaterfallChart'
+import ComboChart from '../../charts/ComboChart'
+import ScatterChart from '../../charts/ScatterChart'
+import GaugeChart from '../../charts/GaugeChart'
 
 const colorMap: Record<string, string> = {
   positive: colors.accentPositive,
@@ -24,6 +28,12 @@ export interface ChartDiagramProps {
   indicators?: ChartSlideData['indicators']
   radarSeries?: ChartSlideData['radarSeries']
   proportionItems?: ChartSlideData['proportionItems']
+  waterfallItems?: ChartSlideData['waterfallItems']
+  comboSeries?: ChartSlideData['comboSeries']
+  scatterSeries?: ChartSlideData['scatterSeries']
+  scatterXAxis?: string
+  scatterYAxis?: string
+  gaugeData?: ChartSlideData['gaugeData']
   chartHeight?: number
   colorPalette?: string
 }
@@ -47,6 +57,14 @@ export function ChartDiagram(props: ChartDiagramProps) {
       return <RadarChart indicators={props.indicators ?? []} series={props.radarSeries ?? []} height={h} colorPalette={cp} />
     case 'proportion':
       return <ProportionChart items={props.proportionItems ?? []} height={h} colorPalette={cp} />
+    case 'waterfall':
+      return <WaterfallChart items={props.waterfallItems ?? []} height={h} colorPalette={cp} />
+    case 'combo':
+      return <ComboChart categories={props.categories ?? []} series={props.comboSeries ?? []} height={h} colorPalette={cp} />
+    case 'scatter':
+      return <ScatterChart series={props.scatterSeries ?? []} xAxisName={props.scatterXAxis} yAxisName={props.scatterYAxis} height={h} colorPalette={cp} />
+    case 'gauge':
+      return <GaugeChart data={props.gaugeData ?? { value: 0 }} height={h} colorPalette={cp} />
     case 'stacked-bar': {
       const bars = props.bars ?? []
       const categories = bars.map(b => b.category)

@@ -117,6 +117,25 @@ function extractChartItems(data: ChartSlideData): CommonItem[] {
         name: p.name,
         value: p.value,
       }))
+    case 'waterfall':
+      return (data.waterfallItems ?? []).map((w) => ({
+        name: w.name,
+        value: w.value,
+      }))
+    case 'combo':
+      return (data.categories ?? []).map((cat, i) => ({
+        name: cat,
+        value: data.comboSeries?.[0]?.data[i],
+      }))
+    case 'scatter':
+      return (data.scatterSeries ?? []).flatMap((s) =>
+        s.data.map((d, i) => ({
+          name: `${s.name} ${i + 1}`,
+          value: d[1],
+        })),
+      )
+    case 'gauge':
+      return data.gaugeData ? [{ name: data.gaugeData.name || '值', value: data.gaugeData.value }] : []
   }
 }
 
@@ -305,6 +324,33 @@ function buildChart(title: string, body: string | undefined, items: CommonItem[]
       return {
         type: 'chart', chartType: 'proportion', title, body,
         proportionItems: withValues.map((i) => ({ name: i.name, value: i.value, max: 100 })),
+      }
+    case 'waterfall': {
+      const wItems = withValues.map((i, idx) => ({
+        name: i.name,
+        value: i.value,
+        type: (idx === 0 ? 'total' : idx === withValues.length - 1 ? 'total' : 'increase') as 'total' | 'increase' | 'decrease',
+      }))
+      return { type: 'chart', chartType: 'waterfall', title, body, waterfallItems: wItems }
+    }
+    case 'combo':
+      return {
+        type: 'chart', chartType: 'combo', title, body,
+        categories: items.map((i) => i.name),
+        comboSeries: [
+          { name: '数值', data: withValues.map((i) => i.value), seriesType: 'bar' },
+          { name: '趋势', data: withValues.map((i) => Math.round(i.value * 0.3)), seriesType: 'line', yAxisIndex: 1 },
+        ],
+      }
+    case 'scatter':
+      return {
+        type: 'chart', chartType: 'scatter', title, body,
+        scatterSeries: [{ name: '数据', data: withValues.map((i, idx) => [idx * 20 + 10, i.value] as [number, number]) }],
+      }
+    case 'gauge':
+      return {
+        type: 'chart', chartType: 'gauge', title, body,
+        gaugeData: { value: withValues[0]?.value ?? 50, max: 100, name: items[0]?.name ?? '完成率' },
       }
   }
 }

@@ -92,6 +92,10 @@ const VARIANT_OPTIONS: Partial<Record<SlideType, { field: string; options: { val
       { value: 'area', label: '面积' },
       { value: 'radar', label: '雷达' },
       { value: 'proportion', label: '比例' },
+      { value: 'waterfall', label: '瀑布' },
+      { value: 'combo', label: '组合' },
+      { value: 'scatter', label: '散点' },
+      { value: 'gauge', label: '仪表盘' },
     ],
   },
 }
