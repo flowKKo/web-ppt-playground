@@ -1,6 +1,6 @@
 # Presenta
 
-[English](./README.md)
+[English](./README.md) | [Website (EN)](https://www.presenta.help/en/) | [官网 (中文)](https://www.presenta.help/zh/)
 
 基于 Web 的演示文稿编辑器与播放器，支持所见即所得编辑、丰富的图表引擎，以及 AI 驱动的幻灯片生成。
 

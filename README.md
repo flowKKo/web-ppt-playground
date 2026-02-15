@@ -1,6 +1,6 @@
 # Presenta
 
-[中文文档](./README.zh-CN.md)
+[中文文档](./README.zh-CN.md) | [Website (EN)](https://www.presenta.help/en/) | [官网 (中文)](https://www.presenta.help/zh/)
 
 A web-based presentation editor and viewer with WYSIWYG editing, rich diagram support, and AI-powered slide generation.
 
