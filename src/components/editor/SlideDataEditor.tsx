@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData, CycleSlideData, TableSlideData, RoadmapSlideData } from '../../data/types'
+import type { SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData, CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData, VennSlideData, CycleSlideData, TableSlideData, RoadmapSlideData, SwotSlideData, MindmapSlideData, StackSlideData } from '../../data/types'
 import { colors, COLOR_PALETTES } from '../../theme/swiss'
 import ArrayEditor from './ArrayEditor'
 
@@ -185,28 +185,31 @@ function PalettePicker({ value, onChange }: { value?: string; onChange: (v: stri
   )
 }
 
-const paletteTypes = new Set(['grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'chart'])
+const paletteTypes = new Set(['grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'swot', 'mindmap', 'stack', 'chart'])
 
 const defaultTitleSizes: Record<string, number> = {
   title: 60, 'key-point': 48, chart: 36,
   'grid-item': 36, sequence: 36, compare: 36,
   funnel: 36, concentric: 36, 'hub-spoke': 36, venn: 36,
   cycle: 36, table: 36, roadmap: 36,
+  swot: 36, mindmap: 36, stack: 36,
 }
 const defaultBodySizes: Record<string, number> = {
   title: 24, 'key-point': 20, chart: 18,
   'grid-item': 18, sequence: 18, compare: 18,
   funnel: 18, concentric: 18, 'hub-spoke': 18, venn: 18,
   cycle: 18, table: 18, roadmap: 18,
+  swot: 18, mindmap: 18, stack: 18,
 }
 const defaultTitleColors: Record<string, string> = Object.fromEntries(
-  ['title', 'key-point', 'chart', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap'].map(k => [k, colors.textPrimary])
+  ['title', 'key-point', 'chart', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'swot', 'mindmap', 'stack'].map(k => [k, colors.textPrimary])
 )
 const defaultTextColors: Record<string, string> = {
   title: colors.textSecondary, 'key-point': colors.textSecondary, chart: colors.textSecondary,
   'grid-item': '#ffffff', sequence: '#ffffff', compare: colors.textSecondary,
   funnel: '#ffffff', concentric: colors.textPrimary, 'hub-spoke': '#ffffff', venn: colors.textPrimary,
   cycle: colors.textPrimary, table: colors.textPrimary, roadmap: colors.textPrimary,
+  swot: colors.textPrimary, mindmap: colors.textPrimary, stack: colors.textPrimary,
 }
 
 export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEditorProps) {
@@ -338,6 +341,15 @@ export default function SlideDataEditor({ data, onChange, isBlock }: SlideDataEd
 
     case 'roadmap':
       return <RoadmapEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'swot':
+      return <SwotEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'mindmap':
+      return <MindmapEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
+
+    case 'stack':
+      return <StackEditor data={data} onChange={onChange} commonFields={commonFields} fontSizeFields={fontSizeFields} colorFields={colorFields} />
   }
 }
 
@@ -1044,6 +1056,95 @@ function RoadmapEditor({ data, onChange, commonFields, fontSizeFields, colorFiel
                 )}
                 label="任务"
               />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function SwotEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: SwotSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  const quadrants = [
+    { key: 'strengths' as const, label: '优势 (S)' },
+    { key: 'weaknesses' as const, label: '劣势 (W)' },
+    { key: 'opportunities' as const, label: '机会 (O)' },
+    { key: 'threats' as const, label: '威胁 (T)' },
+  ]
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      {quadrants.map(({ key, label }) => (
+        <Section key={key} title={label}>
+          <ArrayEditor
+            items={data[key]}
+            onChange={(items) => onChange({ ...data, [key]: items })}
+            createDefault={() => ({ label: '新项', description: '' })}
+            renderRow={(item, _, update) => (
+              <div className="space-y-1">
+                <TextInput label="标签" value={item.label} onChange={(v) => update({ ...item, label: v })} />
+                <TextInput label="描述" value={item.description ?? ''} onChange={(v) => update({ ...item, description: v })} />
+              </div>
+            )}
+          />
+        </Section>
+      ))}
+    </div>
+  )
+}
+
+function MindmapEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: MindmapSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  type MNode = { label: string; children?: MNode[] }
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      <Section title="中心节点">
+        <TextInput label="标签" value={data.root.label} onChange={(v) => onChange({ ...data, root: { ...data.root, label: v } })} />
+      </Section>
+      <Section title="分支">
+        <ArrayEditor<MNode>
+          items={data.root.children ?? []}
+          onChange={(children) => onChange({ ...data, root: { ...data.root, children } })}
+          createDefault={() => ({ label: '新分支' })}
+          renderRow={(branch, _, update) => (
+            <div className="space-y-1">
+              <TextInput label="分支名" value={branch.label} onChange={(v) => update({ ...branch, label: v })} />
+              <ArrayEditor<MNode>
+                items={branch.children ?? []}
+                onChange={(children) => update({ ...branch, children })}
+                createDefault={() => ({ label: '子项' })}
+                renderRow={(child, __, updateChild) => (
+                  <TextInput label="子项" value={child.label} onChange={(v) => updateChild({ ...child, label: v })} />
+                )}
+                label="子项"
+              />
+            </div>
+          )}
+        />
+      </Section>
+    </div>
+  )
+}
+
+function StackEditor({ data, onChange, commonFields, fontSizeFields, colorFields }: { data: StackSlideData; onChange: (d: SlideData) => void; commonFields: React.ReactNode; fontSizeFields?: React.ReactNode; colorFields?: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      {commonFields}
+      {fontSizeFields}
+      {colorFields}
+      <Section title="层级">
+        <ArrayEditor
+          items={data.layers}
+          onChange={(layers) => onChange({ ...data, layers })}
+          createDefault={() => ({ label: '新层', description: '' })}
+          renderRow={(layer, _, update) => (
+            <div className="space-y-1">
+              <TextInput label="标签" value={layer.label} onChange={(v) => update({ ...layer, label: v })} />
+              <TextInput label="描述" value={layer.description ?? ''} onChange={(v) => update({ ...layer, description: v })} />
             </div>
           )}
         />

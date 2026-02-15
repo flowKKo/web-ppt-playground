@@ -2,8 +2,10 @@ import type {
   SlideData, ChartSlideData, GridItemSlideData, SequenceSlideData,
   CompareSlideData, FunnelSlideData, ConcentricSlideData, HubSpokeSlideData,
   VennSlideData, CycleSlideData, TableSlideData, RoadmapSlideData,
+  SwotSlideData, MindmapSlideData, StackSlideData,
   ChartType, GridItemVariant, SequenceVariant, FunnelVariant,
   ConcentricVariant, HubSpokeVariant, VennVariant, CycleVariant, TableVariant, RoadmapVariant,
+  StackVariant,
 } from './types'
 
 // ─── Common intermediate representation ───
@@ -97,6 +99,36 @@ export function extractCommonItems(data: SlideData): CommonSlideData {
       return {
         ...base,
         items: data.phases.map((p) => ({ name: p.label, description: p.items.map(i => i.label).join(', ') })),
+      }
+
+    case 'swot':
+      return {
+        ...base,
+        items: [
+          ...data.strengths.map((i) => ({ name: i.label, description: i.description })),
+          ...data.weaknesses.map((i) => ({ name: i.label, description: i.description })),
+          ...data.opportunities.map((i) => ({ name: i.label, description: i.description })),
+          ...data.threats.map((i) => ({ name: i.label, description: i.description })),
+        ],
+      }
+
+    case 'mindmap': {
+      const items: CommonItem[] = [{ name: data.root.label }]
+      if (data.root.children) {
+        for (const child of data.root.children) {
+          items.push({ name: child.label })
+          if (child.children) {
+            for (const gc of child.children) items.push({ name: gc.label })
+          }
+        }
+      }
+      return { ...base, items }
+    }
+
+    case 'stack':
+      return {
+        ...base,
+        items: data.layers.map((l) => ({ name: l.label, description: l.description })),
       }
 
     case 'block-slide':
@@ -232,6 +264,7 @@ function applyVariant(data: SlideData, variant?: string): SlideData {
     case 'cycle': return { ...data, variant: variant as CycleVariant }
     case 'table': return { ...data, variant: variant as TableVariant }
     case 'roadmap': return { ...data, variant: variant as RoadmapVariant }
+    case 'stack': return { ...data, variant: variant as StackVariant }
     case 'chart': return { ...data, chartType: variant as ChartType }
     default: return data
   }
@@ -317,6 +350,33 @@ function buildTarget(
         type: 'roadmap', title, body,
         phases: items.map((i) => ({ label: i.name, items: [{ label: i.description ?? '任务', status: 'pending' as const }] })),
         variant: (variant as RoadmapVariant) ?? 'horizontal',
+      }
+
+    case 'swot': {
+      const quarter = Math.ceil(items.length / 4)
+      return {
+        type: 'swot', title, body,
+        strengths: items.slice(0, quarter).map((i) => ({ label: i.name, description: i.description })),
+        weaknesses: items.slice(quarter, quarter * 2).map((i) => ({ label: i.name, description: i.description })),
+        opportunities: items.slice(quarter * 2, quarter * 3).map((i) => ({ label: i.name, description: i.description })),
+        threats: items.slice(quarter * 3).map((i) => ({ label: i.name, description: i.description })),
+      }
+    }
+
+    case 'mindmap':
+      return {
+        type: 'mindmap', title, body,
+        root: {
+          label: items[0]?.name ?? title,
+          children: (items.length > 1 ? items.slice(1) : items).map((i) => ({ label: i.name })),
+        },
+      }
+
+    case 'stack':
+      return {
+        type: 'stack', title, body,
+        layers: items.map((i) => ({ label: i.name, description: i.description })),
+        variant: (variant as StackVariant) ?? 'horizontal',
       }
 
     case 'block-slide':
@@ -618,6 +678,39 @@ export function createDefaultSlide(type: SlideData['type']): SlideData {
         ],
       }
 
+    case 'swot':
+      return {
+        type: 'swot', title: 'SWOT 分析',
+        strengths: [{ label: '品牌影响力', description: '行业领先' }, { label: '技术积累' }],
+        weaknesses: [{ label: '研发周期', description: '迭代偏慢' }],
+        opportunities: [{ label: '新兴市场', description: '增长潜力大' }],
+        threats: [{ label: '竞争加剧' }, { label: '政策风险' }],
+      }
+
+    case 'mindmap':
+      return {
+        type: 'mindmap', title: '思维导图',
+        root: {
+          label: '中心主题',
+          children: [
+            { label: '分支一', children: [{ label: '要点 A' }, { label: '要点 B' }] },
+            { label: '分支二', children: [{ label: '要点 C' }] },
+            { label: '分支三' },
+          ],
+        },
+      }
+
+    case 'stack':
+      return {
+        type: 'stack', title: '技术架构', variant: 'horizontal',
+        layers: [
+          { label: '表现层', description: 'UI / 交互' },
+          { label: '业务层', description: '核心逻辑' },
+          { label: '数据层', description: '存储 / 缓存' },
+          { label: '基础设施', description: '云 / 网络' },
+        ],
+      }
+
     case 'block-slide':
       return {
         type: 'block-slide', title: '新页面',
@@ -699,6 +792,9 @@ function getVariant(data: SlideData): string | undefined {
     case 'cycle': return data.variant
     case 'table': return data.variant
     case 'roadmap': return data.variant
+    case 'swot': return undefined
+    case 'mindmap': return undefined
+    case 'stack': return data.variant
     case 'chart': return data.chartType
     default: return undefined
   }

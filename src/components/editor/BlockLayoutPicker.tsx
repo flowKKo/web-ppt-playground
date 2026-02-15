@@ -14,6 +14,9 @@ export const BLOCK_TYPE_META: Record<BlockType, { icon: string; label: string; c
   'cycle': { icon: '⟳', label: '循环', color: 'bg-lime-50 text-lime-600' },
   'table': { icon: '▦', label: '表格', color: 'bg-sky-50 text-sky-600' },
   'roadmap': { icon: '⬥', label: '路线图', color: 'bg-fuchsia-50 text-fuchsia-600' },
+  'swot': { icon: '⊞', label: 'SWOT', color: 'bg-red-50 text-red-600' },
+  'mindmap': { icon: '🌿', label: '思维导图', color: 'bg-green-50 text-green-600' },
+  'stack': { icon: '▤', label: '堆叠', color: 'bg-yellow-50 text-yellow-600' },
   'chart': { icon: '▊', label: '图表', color: 'bg-teal-50 text-teal-600' },
   'image': { icon: '🖼', label: '图片', color: 'bg-pink-50 text-pink-600' },
 }
@@ -24,7 +27,7 @@ interface BlockLayoutPickerProps {
 }
 
 export const BLOCK_TYPES: BlockType[] = [
-  'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'chart', 'image',
+  'title-body', 'grid-item', 'sequence', 'compare', 'funnel', 'concentric', 'hub-spoke', 'venn', 'cycle', 'table', 'roadmap', 'swot', 'mindmap', 'stack', 'chart', 'image',
 ]
 
 export const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options: { value: string; label: string }[] }>> = {
@@ -121,6 +124,14 @@ export const VARIANT_OPTIONS: Partial<Record<BlockType, { field: string; options
       { value: 'milestone', label: '里程碑' },
     ],
   },
+  'stack': {
+    field: 'variant',
+    options: [
+      { value: 'horizontal', label: '水平' },
+      { value: 'vertical', label: '垂直' },
+      { value: 'offset', label: '偏移' },
+    ],
+  },
   'chart': {
     field: 'chartType',
     options: [
@@ -160,6 +171,9 @@ export function getCurrentVariant(data: BlockData): string | undefined {
     case 'cycle': return data.variant
     case 'table': return data.variant
     case 'roadmap': return data.variant
+    case 'swot': return undefined
+    case 'mindmap': return undefined
+    case 'stack': return data.variant
     case 'chart': return data.chartType
     default: return undefined
   }
@@ -191,6 +205,12 @@ export function convertBlockType(source: BlockData, targetType: BlockType): Bloc
       return { type: 'table', headers: ['项目', '状态', '进度'], rows: [{ cells: ['任务A', '进行中', '60%'] }, { cells: ['任务B', '已完成', '100%'], highlight: true }], variant: 'striped' }
     case 'roadmap':
       return { type: 'roadmap', phases: [{ label: '阶段一', items: [{ label: '任务1', status: 'done' }] }, { label: '阶段二', items: [{ label: '任务2', status: 'active' }] }], variant: 'horizontal' }
+    case 'swot':
+      return { type: 'swot', strengths: [{ label: '优势1' }], weaknesses: [{ label: '劣势1' }], opportunities: [{ label: '机会1' }], threats: [{ label: '威胁1' }] }
+    case 'mindmap':
+      return { type: 'mindmap', root: { label: '中心主题', children: [{ label: '分支一', children: [{ label: '子项1' }] }, { label: '分支二' }] } }
+    case 'stack':
+      return { type: 'stack', layers: [{ label: '层级一', description: '描述' }, { label: '层级二', description: '描述' }, { label: '层级三', description: '描述' }], variant: 'horizontal' }
     case 'chart':
       return { type: 'chart', chartType: 'bar', bars: [{ category: 'Q1', values: [{ name: '值', value: 45 }] }, { category: 'Q2', values: [{ name: '值', value: 62 }] }] }
     case 'image':
@@ -210,6 +230,7 @@ export function applyVariant(data: BlockData, value: string): BlockData {
     case 'cycle': return { ...data, variant: value as typeof data.variant }
     case 'table': return { ...data, variant: value as typeof data.variant }
     case 'roadmap': return { ...data, variant: value as typeof data.variant }
+    case 'stack': return { ...data, variant: value as typeof data.variant }
     case 'chart': return { ...data, chartType: value as typeof data.chartType }
     default: return data
   }

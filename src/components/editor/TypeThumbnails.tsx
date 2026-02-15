@@ -174,6 +174,50 @@ function RoadmapThumb({ active }: ThumbnailProps) {
   )
 }
 
+function SwotThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <rect x="10" y="6" width="26" height="14" rx="2" fill={c} opacity={0.3} />
+      <rect x="44" y="6" width="26" height="14" rx="2" fill={c} opacity={0.5} />
+      <rect x="10" y="25" width="26" height="14" rx="2" fill={c} opacity={0.7} />
+      <rect x="44" y="25" width="26" height="14" rx="2" fill={c} opacity={0.4} />
+      <text x="23" y="15" textAnchor="middle" fontSize="7" fontWeight="bold" fill={c}>S</text>
+      <text x="57" y="15" textAnchor="middle" fontSize="7" fontWeight="bold" fill={c}>W</text>
+      <text x="23" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill={c}>O</text>
+      <text x="57" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill={c}>T</text>
+    </svg>
+  )
+}
+
+function MindmapThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <circle cx="40" cy="22" r="6" fill={c} />
+      <line x1="34" y1="22" x2="18" y2="12" stroke={c} strokeWidth="1.2" opacity={0.5} />
+      <line x1="34" y1="22" x2="18" y2="32" stroke={c} strokeWidth="1.2" opacity={0.5} />
+      <line x1="46" y1="22" x2="62" y2="12" stroke={c} strokeWidth="1.2" opacity={0.5} />
+      <line x1="46" y1="22" x2="62" y2="32" stroke={c} strokeWidth="1.2" opacity={0.5} />
+      <circle cx="18" cy="12" r="3.5" fill={c} opacity={0.5} />
+      <circle cx="18" cy="32" r="3.5" fill={c} opacity={0.5} />
+      <circle cx="62" cy="12" r="3.5" fill={c} opacity={0.5} />
+      <circle cx="62" cy="32" r="3.5" fill={c} opacity={0.5} />
+    </svg>
+  )
+}
+
+function StackThumb({ active }: ThumbnailProps) {
+  const c = active ? FILL_ACCENT : STROKE
+  return (
+    <svg viewBox="0 0 80 45" className="w-full h-full">
+      <rect x="14" y="6" width="52" height="8" rx="2" fill={c} opacity={0.3} />
+      <rect x="14" y="17" width="52" height="8" rx="2" fill={c} opacity={0.5} />
+      <rect x="14" y="28" width="52" height="8" rx="2" fill={c} opacity={0.8} />
+    </svg>
+  )
+}
+
 // ─── Registry ───
 
 export type SlideType = SlideData['type']
@@ -198,6 +242,9 @@ export const TYPE_LIST: TypeMeta[] = [
   { type: 'cycle', label: '循环', Thumb: CycleThumb },
   { type: 'table', label: '表格', Thumb: TableThumb },
   { type: 'roadmap', label: '路线图', Thumb: RoadmapThumb },
+  { type: 'swot', label: 'SWOT', Thumb: SwotThumb },
+  { type: 'mindmap', label: '思维导图', Thumb: MindmapThumb },
+  { type: 'stack', label: '堆叠', Thumb: StackThumb },
 ]
 
 export function TypeThumbnail({ type, active }: { type: SlideType; active?: boolean }) {

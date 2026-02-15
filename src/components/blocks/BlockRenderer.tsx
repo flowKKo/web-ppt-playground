@@ -13,6 +13,9 @@ import { VennDiagram } from '../engines/VennEngine'
 import { CycleDiagram } from '../engines/CycleEngine'
 import { TableDiagram } from '../engines/TableEngine'
 import { RoadmapDiagram } from '../engines/RoadmapEngine'
+import { SwotDiagram } from '../engines/SwotEngine'
+import { MindmapDiagram } from '../engines/MindmapEngine'
+import { StackDiagram } from '../engines/StackEngine'
 import { ChartDiagram } from '../slides/ChartSlide'
 
 interface BlockRendererProps {
@@ -121,6 +124,12 @@ export default function BlockRenderer({ data, blockId, slideIndex }: BlockRender
       return <DiagramWrapper><TableDiagram headers={data.headers} rows={data.rows} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'roadmap':
       return <DiagramWrapper><RoadmapDiagram phases={data.phases} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'swot':
+      return <DiagramWrapper><SwotDiagram strengths={data.strengths} weaknesses={data.weaknesses} opportunities={data.opportunities} threats={data.threats} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'mindmap':
+      return <DiagramWrapper><MindmapDiagram root={data.root} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
+    case 'stack':
+      return <DiagramWrapper><StackDiagram layers={data.layers} variant={data.variant} textColor={data.textColor} colorPalette={data.colorPalette} /></DiagramWrapper>
     case 'chart': {
       const { type: _, ...chartProps } = data
       return (

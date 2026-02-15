@@ -334,6 +334,66 @@ export interface RoadmapSlideData {
   colorPalette?: string
 }
 
+// ─── 15. SWOT Engine ───
+export interface SwotItem {
+  label: string
+  description?: string
+}
+
+export interface SwotSlideData {
+  type: 'swot'
+  title: string
+  body?: string
+  strengths: SwotItem[]
+  weaknesses: SwotItem[]
+  opportunities: SwotItem[]
+  threats: SwotItem[]
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
+// ─── 16. Mindmap Engine ───
+export interface MindmapNode {
+  label: string
+  children?: MindmapNode[]
+}
+
+export interface MindmapSlideData {
+  type: 'mindmap'
+  title: string
+  body?: string
+  root: MindmapNode
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
+// ─── 17. Stack Engine ───
+export type StackVariant = 'horizontal' | 'vertical' | 'offset'
+
+export interface StackLayer {
+  label: string
+  description?: string
+}
+
+export interface StackSlideData {
+  type: 'stack'
+  title: string
+  body?: string
+  layers: StackLayer[]
+  variant: StackVariant
+  titleSize?: number
+  bodySize?: number
+  titleColor?: string
+  textColor?: string
+  colorPalette?: string
+}
+
 // ─── Union ───
 export type SlideData =
   | TitleSlideData
@@ -349,6 +409,9 @@ export type SlideData =
   | CycleSlideData
   | TableSlideData
   | RoadmapSlideData
+  | SwotSlideData
+  | MindmapSlideData
+  | StackSlideData
   | BlockSlideData
 
 // ─── Block Model ───
@@ -366,6 +429,9 @@ export type BlockData =
   | { type: 'cycle'; steps: CycleStep[]; variant: CycleVariant; textColor?: string; colorPalette?: string }
   | { type: 'table'; headers: string[]; rows: TableRow[]; variant: TableVariant; textColor?: string; colorPalette?: string }
   | { type: 'roadmap'; phases: RoadmapPhase[]; variant: RoadmapVariant; textColor?: string; colorPalette?: string }
+  | { type: 'swot'; strengths: SwotItem[]; weaknesses: SwotItem[]; opportunities: SwotItem[]; threats: SwotItem[]; textColor?: string; colorPalette?: string }
+  | { type: 'mindmap'; root: MindmapNode; textColor?: string; colorPalette?: string }
+  | { type: 'stack'; layers: StackLayer[]; variant: StackVariant; textColor?: string; colorPalette?: string }
   | { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 export interface ContentBlock {

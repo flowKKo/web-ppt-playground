@@ -101,6 +101,15 @@ function extractDiagramData(data: SlideData): BlockData | null {
     case 'roadmap':
       return { type: 'roadmap', phases: data.phases, variant: data.variant }
 
+    case 'swot':
+      return { type: 'swot', strengths: data.strengths, weaknesses: data.weaknesses, opportunities: data.opportunities, threats: data.threats }
+
+    case 'mindmap':
+      return { type: 'mindmap', root: data.root }
+
+    case 'stack':
+      return { type: 'stack', layers: data.layers, variant: data.variant }
+
     case 'chart': {
       const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = data
       return { type: 'chart' as const, ...chartData }

@@ -49,7 +49,7 @@ Script (slides.md)
 | `src/data/user-decks/<deck-id>.ts` | Deck data: export `DeckMeta` with `slides: SlideData[]` |
 | `src/data/decks/index.ts` | Auto-discovery registry via `import.meta.glob` (no manual registration) |
 | `src/theme/swiss.ts` | Theme: colors, echarts theme, motion config, card style |
-| `src/components/engines/*.tsx` | 7 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn) |
+| `src/components/engines/*.tsx` | 13 diagram engines (GridItem, Sequence, Compare, Funnel, Concentric, HubSpoke, Venn, Cycle, Table, Roadmap, Swot, Mindmap, Stack) |
 | `src/components/slides/ChartSlide.tsx` | ECharts renderer (20 chart sub-types) |
 | `src/components/blocks/` | Block model: BlockRenderer, BlockSlideRenderer, BlockWrapper |
 
@@ -59,7 +59,7 @@ Script (slides.md)
 
 > **CRITICAL**: Before designing any slide, review this catalog. Every slide you generate MUST use one of these types with the exact data shape specified. There are NO other options.
 
-### A. Standalone Slide Types (13 types)
+### A. Standalone Slide Types (16 types)
 
 These are top-level `SlideData` types. Each renders as a full slide.
 
@@ -429,6 +429,71 @@ Phased planning with status tracking per item.
 
 ---
 
+#### 14. `swot` — SWOT Analysis Matrix
+
+Four-quadrant SWOT analysis with colored sections.
+
+```ts
+{
+  type: 'swot',
+  title: string,
+  body?: string,
+  strengths: SwotItem[],      // { label, description? }
+  weaknesses: SwotItem[],
+  opportunities: SwotItem[],
+  threats: SwotItem[],
+}
+```
+
+- Fixed 2×2 grid: S(↑), W(↓), O(★), T(⚠)
+- Each quadrant auto-colors with palette
+- Best for: strategic analysis, competitive assessment, project evaluation
+
+---
+
+#### 15. `mindmap` — Mind Map / Radial Tree
+
+SVG-based mind map with center root, left/right branches, and optional sub-branches.
+
+```ts
+{
+  type: 'mindmap',
+  title: string,
+  body?: string,
+  root: MindmapNode,  // { label, children?: MindmapNode[] }
+}
+```
+
+- Root renders as colored pill in center
+- Branches split left/right automatically
+- Supports 2 levels of depth (root → branches → sub-branches)
+- Best for: brainstorming, topic decomposition, knowledge mapping
+- Recommended: 3-6 main branches, 0-3 sub-branches each
+
+---
+
+#### 16. `stack` — Layered Stack Diagram
+
+Stacked layers showing hierarchical architecture or layered concepts.
+
+```ts
+{
+  type: 'stack',
+  title: string,
+  body?: string,
+  layers: StackLayer[],  // { label, description? }
+  variant: 'horizontal' | 'vertical' | 'offset',
+}
+```
+
+| Variant | Visual | Best For |
+|---------|--------|----------|
+| `horizontal` | Stacked horizontal bars with left accent | Technology stacks, architecture layers |
+| `vertical` | Ascending columns side by side | Comparative heights, building blocks |
+| `offset` | Overlapping cascading cards | Priority layers, progressive depth |
+
+---
+
 ### B. Block-Slide (Free Layout Composition)
 
 The `block-slide` type enables **multiple diagrams on a single slide** via positioned blocks on a canvas.
@@ -447,11 +512,11 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
   y: number,          // percentage 0-100 (top edge)
   width: number,      // percentage 0-100
   height: number,     // percentage 0-100
-  data: BlockData,    // one of 12 block types
+  data: BlockData,    // one of 15 block types
 }
 ```
 
-**13 block data types** (same engines as standalone slides, but without title/body wrappers):
+**16 block data types** (same engines as standalone slides, but without title/body wrappers):
 
 | Block `type` | Fields (same as standalone minus `title`/`body`) |
 |-------------|------------------------------------------------|
@@ -466,6 +531,9 @@ The `block-slide` type enables **multiple diagrams on a single slide** via posit
 | `cycle` | `{ steps, variant }` |
 | `table` | `{ headers, rows, variant }` |
 | `roadmap` | `{ phases, variant }` |
+| `swot` | `{ strengths, weaknesses, opportunities, threats }` |
+| `mindmap` | `{ root }` |
+| `stack` | `{ layers, variant }` |
 | `chart` | `{ chartType, bars?, slices?, innerRadius?, categories?, lineSeries?, indicators?, radarSeries?, proportionItems?, waterfallItems?, comboSeries?, scatterSeries?, scatterXAxis?, scatterYAxis?, gaugeData?, treemapData?, sankeyNodes?, sankeyLinks?, heatmapYCategories?, heatmapData?, sunburstData?, boxplotItems?, ganttTasks?, highlight? }` |
 | `image` | `{ src?, alt?, fit?, placeholder? }` — placeholder for images; always generate with `src` omitted |
 
@@ -486,6 +554,9 @@ The design canvas is 1920×1080 (content area ~1600×824px after padding). Block
 | `table` | 3-5 rows | 35-50% |
 | `table` | 6-10 rows | 55-75% |
 | `roadmap` | 2-4 phases | 45-65% |
+| `swot` | 4 quadrants | 55-75% |
+| `mindmap` | SVG tree | width × 0.6 (keep ~1.5:1 ratio) |
+| `stack` | 3-5 layers | 40-60% |
 | `title-body` | heading + 1-2 lines | 20-30% |
 | `title-body` | heading + paragraph | 30-45% |
 | `image` | accent / fill | 25-40% |
@@ -692,6 +763,10 @@ Slide 7: "用户转化路径"
 | Product roadmap | `roadmap` (horizontal) | Quarterly plans, phased rollouts |
 | Project milestones | `roadmap` (milestone) | Key deliverables on timeline |
 | Historical timeline | `roadmap` (vertical) | Chronological events, project phases |
+| Strategic analysis | `swot` | SWOT analysis, competitive assessment |
+| Topic decomposition | `mindmap` | Brainstorming, knowledge mapping |
+| Architecture layers | `stack` (horizontal) | Technology stacks, layered systems |
+| Priority layers | `stack` (offset) | Progressive depth, cascading priorities |
 | Mixed content | `block-slide` | Text + diagram on same slide |
 | Sparse content + visual fill | `block-slide` + `image` block | Diagram occupies <60% → add image to balance |
 | Product / UI showcase | `block-slide` + `image` block | Screenshot placeholder + caption or metrics |
@@ -1166,6 +1241,25 @@ interface RoadmapSlideData {
   variant: 'horizontal' | 'vertical' | 'milestone'
 }
 
+interface SwotSlideData {
+  type: 'swot'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  strengths: SwotItem[]; weaknesses: SwotItem[]
+  opportunities: SwotItem[]; threats: SwotItem[]
+}
+
+interface MindmapSlideData {
+  type: 'mindmap'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  root: MindmapNode  // { label, children?: MindmapNode[] }
+}
+
+interface StackSlideData {
+  type: 'stack'; title: string; body?: string
+  titleSize?: number; bodySize?: number  // Standard: titleSize:40, bodySize:20
+  layers: StackLayer[]; variant: 'horizontal' | 'vertical' | 'offset'
+}
+
 interface BlockSlideData {
   type: 'block-slide'; title: string; blocks: ContentBlock[]
 }
@@ -1194,8 +1288,11 @@ interface SankeyLink { source: string; target: string; value: number }
 interface SunburstNode { name: string; value?: number; children?: SunburstNode[] }
 interface BoxplotItem { name: string; values: [number, number, number, number, number] }
 interface GanttTask { name: string; start: number; end: number; category?: string }
+interface SwotItem { label: string; description?: string }
+interface MindmapNode { label: string; children?: MindmapNode[] }
+interface StackLayer { label: string; description?: string }
 interface ContentBlock { id: string; x: number; y: number; width: number; height: number; data: BlockData }
-// BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, chart, image
+// BlockData includes: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, swot, mindmap, stack, chart, image
 // Image block: { type: 'image'; src?: string; alt?: string; fit?: 'cover' | 'contain' | 'fill'; placeholder?: string }
 
 // ─── Variant Unions ───
@@ -1208,6 +1305,7 @@ type VennVariant = 'classic' | 'linear' | 'linear-filled'
 type CycleVariant = 'circular' | 'gear' | 'loop'
 type TableVariant = 'striped' | 'bordered' | 'highlight'
 type RoadmapVariant = 'horizontal' | 'vertical' | 'milestone'
+type StackVariant = 'horizontal' | 'vertical' | 'offset'
 type ChartType = 'bar' | 'horizontal-bar' | 'stacked-bar' | 'pie' | 'donut' | 'rose' | 'line' | 'area' | 'radar' | 'proportion' | 'waterfall' | 'combo' | 'scatter' | 'gauge' | 'treemap' | 'sankey' | 'heatmap' | 'sunburst' | 'boxplot' | 'gantt'
 ```
 

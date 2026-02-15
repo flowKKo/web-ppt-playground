@@ -38,6 +38,12 @@ function blockToSlideData(data: BlockData): SlideData | null {
       return { ...data, title: '' }
     case 'roadmap':
       return { ...data, title: '' }
+    case 'swot':
+      return { ...data, title: '' }
+    case 'mindmap':
+      return { ...data, title: '' }
+    case 'stack':
+      return { ...data, title: '' }
     case 'chart':
       return { ...data, title: '' }
   }
@@ -66,6 +72,12 @@ function slideDataToBlock(slideData: SlideData, originalType: BlockData['type'])
       return { type: 'table', headers: slideData.headers, rows: slideData.rows, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'roadmap':
       return { type: 'roadmap', phases: slideData.phases, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'swot':
+      return { type: 'swot', strengths: slideData.strengths, weaknesses: slideData.weaknesses, opportunities: slideData.opportunities, threats: slideData.threats, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'mindmap':
+      return { type: 'mindmap', root: slideData.root, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
+    case 'stack':
+      return { type: 'stack', layers: slideData.layers, variant: slideData.variant, textColor: slideData.textColor, colorPalette: slideData.colorPalette }
     case 'chart': {
       const { type, title, body, titleSize, bodySize, titleColor, textColor, chartHeight, ...chartData } = slideData
       return { type: 'chart' as const, ...chartData }

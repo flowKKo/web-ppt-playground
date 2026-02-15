@@ -26,7 +26,7 @@ Use the `/web-ppt` skill to generate or update slides:
 
 ## Architecture
 
-### Slide Types (14 types — discriminated union in `src/data/types.ts`)
+### Slide Types (17 types — discriminated union in `src/data/types.ts`)
 
 | Type | Description | Variants |
 |------|-------------|----------|
@@ -43,9 +43,12 @@ Use the `/web-ppt` skill to generate or update slides:
 | `cycle` | Circular process diagrams | 3 variants (circular, gear, loop) |
 | `table` | Table/matrix layouts | 3 variants (striped, bordered, highlight) |
 | `roadmap` | Multi-track timelines | 3 variants (horizontal, vertical, milestone) |
+| `swot` | SWOT analysis matrix | — (fixed 2×2 grid) |
+| `mindmap` | Mind map / radial tree | — (SVG tree layout) |
+| `stack` | Layered stack diagram | 3 variants (horizontal, vertical, offset) |
 | `block-slide` | Free-layout canvas with positioned `ContentBlock[]` | — |
 
-### Engine Architecture (10 engines)
+### Engine Architecture (13 engines)
 
 Each engine renders a specific diagram type and exports both a full-slide component (`*Engine`) and a headless diagram function (`*Diagram`) for use in blocks:
 
@@ -59,10 +62,13 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `CycleEngine` / `CycleDiagram`
 - `TableEngine` / `TableDiagram`
 - `RoadmapEngine` / `RoadmapDiagram`
+- `SwotEngine` / `SwotDiagram`
+- `MindmapEngine` / `MindmapDiagram`
+- `StackEngine` / `StackDiagram`
 
 ### Block Model
 
-`BlockSlideData` contains `ContentBlock[]`, each block has `id/x/y/width/height` (percentage-based) + `BlockData` (12 types: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, chart).
+`BlockSlideData` contains `ContentBlock[]`, each block has `id/x/y/width/height` (percentage-based) + `BlockData` (15 types: title-body, grid-item, sequence, compare, funnel, concentric, hub-spoke, venn, cycle, table, roadmap, swot, mindmap, stack, chart).
 
 ### Editor System
 
@@ -104,7 +110,7 @@ Each engine renders a specific diagram type and exports both a full-slide compon
 - `src/components/slides/` — TitleSlide, KeyPointSlide, ChartSlide
 
 ### Engines
-- `src/components/engines/*.tsx` — 10 diagram engines
+- `src/components/engines/*.tsx` — 13 diagram engines
 - `src/components/engines/shared/` — EngineTitle, ConnectorArrow
 
 ### Block System

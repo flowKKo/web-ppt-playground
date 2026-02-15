@@ -103,6 +103,14 @@ const VARIANT_OPTIONS: Partial<Record<SlideType, { field: string; options: { val
       { value: 'milestone', label: '里程碑' },
     ],
   },
+  'stack': {
+    field: 'variant',
+    options: [
+      { value: 'horizontal', label: '水平' },
+      { value: 'vertical', label: '垂直' },
+      { value: 'offset', label: '偏移' },
+    ],
+  },
   'chart': {
     field: 'chartType',
     options: [
@@ -142,6 +150,9 @@ function getCurrentVariant(data: SlideData): string | undefined {
     case 'cycle': return data.variant
     case 'table': return data.variant
     case 'roadmap': return data.variant
+    case 'swot': return undefined
+    case 'mindmap': return undefined
+    case 'stack': return data.variant
     case 'chart': return data.chartType
     default: return undefined
   }
