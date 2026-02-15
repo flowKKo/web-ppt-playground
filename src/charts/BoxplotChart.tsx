@@ -3,7 +3,7 @@ import * as echarts from 'echarts/core'
 import { BoxplotChart as BoxplotChartType } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { echartsTheme, colors, getChartPalette } from '../theme/swiss'
+import { echartsTheme, getChartPalette } from '../theme/swiss'
 import type { BoxplotItem } from '../data/types'
 
 echarts.use([BoxplotChartType, GridComponent, TooltipComponent, CanvasRenderer])
@@ -22,14 +22,15 @@ export default function BoxplotChart({ items, height, colorPalette }: BoxplotCha
   const option = {
     tooltip: {
       trigger: 'item' as const,
+      // ECharts boxplot tooltip: params.value = [categoryIndex, min, Q1, median, Q3, max]
       formatter: (params: { name: string; value: number[] }) => {
         const v = params.value
         return `<b>${params.name}</b><br/>
-最大: ${v[4]}<br/>
-Q3: ${v[3]}<br/>
-中位数: ${v[2]}<br/>
-Q1: ${v[1]}<br/>
-最小: ${v[0]}`
+最大: ${v[5]}<br/>
+Q3: ${v[4]}<br/>
+中位数: ${v[3]}<br/>
+Q1: ${v[2]}<br/>
+最小: ${v[1]}`
       },
     },
     grid: {
@@ -64,23 +65,10 @@ Q1: ${v[1]}<br/>
           },
         },
         boxWidth: ['30%', '60%'],
-        tooltip: {
-          formatter: (params: { name: string; value: number[] }) => {
-            const v = params.value
-            return `<b>${items[params.value[0] as unknown as number]?.name || params.name}</b><br/>
-最大: ${v[5]}<br/>
-Q3: ${v[4]}<br/>
-中位数: ${v[3]}<br/>
-Q1: ${v[2]}<br/>
-最小: ${v[1]}`
-          },
-        },
       },
     ],
     animationDuration: 800,
     animationEasing: 'cubicOut' as const,
-    color: [mainColor, ...pal.slice(1)],
-    textStyle: { color: colors.textPrimary },
   }
 
   return (

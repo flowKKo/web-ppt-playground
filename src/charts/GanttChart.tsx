@@ -15,17 +15,25 @@ interface GanttChartProps {
   colorPalette?: string
 }
 
+interface CustomAPI {
+  value: (dim: number) => number
+  coord: (val: [number, number]) => [number, number]
+  size: (val: [number, number]) => [number, number]
+  style: (extra?: Record<string, unknown>) => Record<string, unknown>
+}
+
 export default function GanttChart({ tasks, height, colorPalette }: GanttChartProps) {
   const pal = getChartPalette(colorPalette)
 
-  // Group by category for coloring
+  // Display bottom-to-top: first task at top of chart
+  const displayTasks = [...tasks].reverse()
   const categories = [...new Set(tasks.map(t => t.category || '默认'))]
-  const taskNames = tasks.map(t => t.name).reverse()
+  const taskNames = displayTasks.map(t => t.name)
 
   const option = {
     tooltip: {
-      formatter: (params: { value: number[]; name: string }) => {
-        const task = tasks[tasks.length - 1 - params.value[1]]
+      formatter: (params: { value: number[] }) => {
+        const task = displayTasks[params.value[1]]
         if (!task) return ''
         return `<b>${task.name}</b><br/>开始: ${task.start}<br/>结束: ${task.end}<br/>时长: ${task.end - task.start}`
       },
@@ -39,8 +47,8 @@ export default function GanttChart({ tasks, height, colorPalette }: GanttChartPr
     },
     xAxis: {
       type: 'value' as const,
-      min: Math.min(...tasks.map(t => t.start)),
-      max: Math.max(...tasks.map(t => t.end)),
+      min: tasks.length > 0 ? Math.min(...tasks.map(t => t.start)) : 0,
+      max: tasks.length > 0 ? Math.max(...tasks.map(t => t.end)) : 10,
     },
     yAxis: {
       type: 'category' as const,
@@ -50,26 +58,21 @@ export default function GanttChart({ tasks, height, colorPalette }: GanttChartPr
     series: [
       {
         type: 'custom' as const,
-        renderItem: (_params: unknown, api: {
-          value: (dim: number) => number
-          coord: (val: [number, number]) => [number, number]
-          size: (val: [number, number]) => [number, number]
-          style: (extra?: Record<string, unknown>) => Record<string, unknown>
-        }) => {
-          const taskIdx = api.value(1)
-          const start = api.coord([api.value(0), taskIdx])
-          const end = api.coord([api.value(0) + api.value(2), taskIdx])
+        renderItem: (_params: unknown, api: CustomAPI) => {
+          const yIdx = api.value(1)
+          const startCoord = api.coord([api.value(0), yIdx])
+          const endCoord = api.coord([api.value(0) + api.value(2), yIdx])
           const barHeight = api.size([0, 1])[1] * 0.6
-          const task = tasks[tasks.length - 1 - taskIdx]
+          const task = displayTasks[yIdx]
           const catIdx = categories.indexOf(task?.category || '默认')
           const color = pal[catIdx % pal.length]
 
           return {
             type: 'rect' as const,
             shape: {
-              x: start[0],
-              y: start[1] - barHeight / 2,
-              width: end[0] - start[0],
+              x: startCoord[0],
+              y: startCoord[1] - barHeight / 2,
+              width: endCoord[0] - startCoord[0],
               height: barHeight,
               r: [4, 4, 4, 4],
             },
@@ -87,7 +90,8 @@ export default function GanttChart({ tasks, height, colorPalette }: GanttChartPr
           x: [0, 2],
           y: 1,
         },
-        data: tasks.map((task, i) => [task.start, tasks.length - 1 - i, task.end - task.start]),
+        // Data uses displayTasks order (reversed), so index maps directly to yAxis category
+        data: displayTasks.map((task, i) => [task.start, i, task.end - task.start]),
         animationDuration: 800,
         animationEasing: 'cubicOut' as const,
       },

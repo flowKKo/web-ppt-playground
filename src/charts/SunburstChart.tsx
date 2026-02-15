@@ -32,7 +32,6 @@ export default function SunburstChart({ data, height, colorPalette }: SunburstCh
         data,
         radius: ['12%', '90%'],
         nodeClick: false,
-        sort: undefined,
         label: {
           show: true,
           fontSize: 12,
@@ -72,7 +71,7 @@ export default function SunburstChart({ data, height, colorPalette }: SunburstCh
         animationEasing: 'cubicOut' as const,
       },
     ],
-    color: pal.slice(0, 8),
+    color: pal,
   }
 
   return (

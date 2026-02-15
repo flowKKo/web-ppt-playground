@@ -28,7 +28,7 @@ export default function ComboChart({ categories, series, height, colorPalette }:
     },
     grid: {
       left: 12,
-      right: hasSecondAxis ? 12 : 12,
+      right: 12,
       top: 24,
       bottom: series.length > 1 ? 40 : 12,
       containLabel: true,
@@ -61,6 +61,10 @@ export default function ComboChart({ categories, series, height, colorPalette }:
             color: baseColor,
             borderColor: '#fff',
             borderWidth: 2,
+          },
+          emphasis: {
+            lineStyle: { width: 3.5 },
+            itemStyle: { shadowBlur: 8, shadowColor: `${baseColor}40` },
           },
         }
       }

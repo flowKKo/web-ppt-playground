@@ -58,7 +58,7 @@ export default function TreemapChart({ data, height, colorPalette }: TreemapChar
               gapWidth: 4,
             },
             upperLabel: { show: false },
-            color: pal.slice(0, 8),
+            color: pal,
           },
           {
             colorSaturation: [0.35, 0.6],

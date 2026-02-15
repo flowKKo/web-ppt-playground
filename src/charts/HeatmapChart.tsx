@@ -19,8 +19,8 @@ interface HeatmapChartProps {
 export default function HeatmapChart({ xCategories, yCategories, data, height, colorPalette }: HeatmapChartProps) {
   const pal = getChartPalette(colorPalette)
   const values = data.map(d => d[2])
-  const minVal = Math.min(...values)
-  const maxVal = Math.max(...values)
+  const minVal = values.length > 0 ? Math.min(...values) : 0
+  const maxVal = values.length > 0 ? Math.max(...values) : 100
 
   const option = {
     tooltip: {
@@ -58,8 +58,8 @@ export default function HeatmapChart({ xCategories, yCategories, data, height, c
       top: 'center' as const,
       inRange: {
         color: [
-          pal[pal.length - 1] ? `${pal[0]}33` : '#f5f5f5',
-          pal[0] || '#3b82f6',
+          `${pal[0] || '#3b82f6'}22`,  // lightest (low value)
+          pal[0] || '#3b82f6',          // full saturation (high value)
         ],
       },
       textStyle: { fontSize: 11 },
